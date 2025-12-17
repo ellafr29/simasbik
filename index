@@ -1,0 +1,2882 @@
+<!doctype html>
+<html lang="id" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistem Absensi Digital SMA</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <style>
+        body {
+            box-sizing: border-box;
+        }
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script src="/_sdk/element_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full bg-gradient-to-br from-blue-50 to-indigo-100 font-sans"><!-- Login Page -->
+  <div id="loginPage" class="min-h-full flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+   <div class="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg">
+    <div class="text-center"><!-- Logo -->
+     <div class="flex justify-center mb-6">
+      <div class="w-20 h-20 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-full flex items-center justify-center shadow-lg">
+       <svg class="w-12 h-12 text-white" fill="currentColor" viewbox="0 0 24 24"><path d="M12 2L2 7v10c0 5.55 3.84 9.74 9 11 5.16-1.26 9-5.45 9-11V7l-10-5z" /> <path d="M9 12l2 2 4-4" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+       </svg>
+      </div>
+     </div>
+     <h2 class="text-3xl font-bold text-gray-900 mb-2">Sistem Absensi Digital</h2>
+     <p class="text-gray-600">SMA Negeri 1 Jakarta</p>
+    </div>
+    <form id="loginForm" class="mt-8 space-y-6">
+     <div><label for="username" class="block text-sm font-medium text-gray-700 mb-2">Username</label> <input id="username" name="username" type="text" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+     </div>
+     <div><label for="password" class="block text-sm font-medium text-gray-700 mb-2">Password</label> <input id="password" name="password" type="password" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+     </div>
+     <div><label for="userType" class="block text-sm font-medium text-gray-700 mb-2">Login Sebagai</label> <select id="userType" name="userType" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"> <option value="">Pilih Role</option> <option value="admin">Admin</option> <option value="wali_kelas">Wali Kelas</option> <option value="siswa">Siswa</option> </select>
+     </div><button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition duration-200"> Masuk </button>
+    </form>
+    <div class="mt-4 p-4 bg-gray-50 rounded-md">
+     <p class="text-sm text-gray-600 font-medium mb-2">Demo Login:</p>
+     <p class="text-xs text-gray-500">Admin: admin/admin123</p>
+     <p class="text-xs text-gray-500">Wali Kelas: wali10a/wali123</p>
+     <p class="text-xs text-gray-500">Wali Kelas: wali11a/wali123</p>
+     <p class="text-xs text-gray-500">Siswa: ahmad2021/siswa123</p>
+    </div>
+   </div>
+  </div><!-- Dashboard -->
+  <div id="dashboard" class="hidden min-h-full"><!-- Header -->
+   <header class="bg-white shadow-sm border-b">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+     <div class="flex justify-between items-center py-4">
+      <div class="flex items-center"><!-- Logo di Header -->
+       <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-full flex items-center justify-center shadow-md mr-3">
+        <svg class="w-6 h-6 text-white" fill="currentColor" viewbox="0 0 24 24"><path d="M12 2L2 7v10c0 5.55 3.84 9.74 9 11 5.16-1.26 9-5.45 9-11V7l-10-5z" /> <path d="M9 12l2 2 4-4" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+       </div>
+       <h1 class="text-2xl font-bold text-gray-900">Dashboard Absensi</h1><span id="userRole" class="ml-4 px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-sm font-medium"></span>
+      </div>
+      <div class="flex items-center space-x-4"><!-- Profile Photo -->
+       <div class="flex items-center space-x-3">
+        <div id="profilePhoto" class="w-10 h-10 rounded-full overflow-hidden border-2 border-gray-300 cursor-pointer hover:border-indigo-500 transition duration-200" onclick="openProfileModal()"><img id="profilePhotoImg" src="" alt="Foto Profil" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+         <div class="w-full h-full bg-gray-200 flex items-center justify-center text-gray-500 text-sm font-medium"><span id="profileInitials"></span>
+         </div>
+        </div><span id="currentUser" class="text-gray-700 font-medium"></span>
+       </div><button id="logoSettingsBtn" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition duration-200"> ⚙️ Logo </button> <button id="logoutBtn" class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition duration-200"> Logout </button>
+      </div>
+     </div>
+    </div>
+   </header><!-- Navigation -->
+   <nav class="bg-indigo-600 text-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+     <div class="flex space-x-8"><button class="nav-btn py-4 px-2 border-b-2 border-transparent hover:border-white transition duration-200" data-tab="overview"> 📊 Overview </button> <button class="nav-btn py-4 px-2 border-b-2 border-transparent hover:border-white transition duration-200" data-tab="attendance"> ✅ Absensi </button> <button class="nav-btn py-4 px-2 border-b-2 border-transparent hover:border-white transition duration-200" data-tab="barcode"> 🏷️ Barcode Siswa </button> <button class="nav-btn py-4 px-2 border-b-2 border-transparent hover:border-white transition duration-200" data-tab="students"> 👥 Data Siswa </button> <button class="nav-btn py-4 px-2 border-b-2 border-transparent hover:border-white transition duration-200" data-tab="reports"> 📈 Laporan </button> <button class="nav-btn py-4 px-2 border-b-2 border-transparent hover:border-white transition duration-200" data-tab="teachers"> 👨‍🏫 Wali Kelas </button>
+     </div>
+    </div>
+   </nav><!-- Content -->
+   <main class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8"><!-- Overview Tab -->
+    <div id="overviewTab" class="tab-content">
+     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div class="bg-white p-6 rounded-lg shadow-md">
+       <div class="flex items-center">
+        <div class="p-3 bg-green-100 rounded-full"><span class="text-2xl">✅</span>
+        </div>
+        <div class="ml-4">
+         <p class="text-sm font-medium text-gray-600">Total Hadir Hari Ini</p>
+         <p class="text-2xl font-bold text-gray-900" id="todayPresent">0</p>
+        </div>
+       </div>
+      </div>
+      <div class="bg-white p-6 rounded-lg shadow-md">
+       <div class="flex items-center">
+        <div class="p-3 bg-red-100 rounded-full"><span class="text-2xl">❌</span>
+        </div>
+        <div class="ml-4">
+         <p class="text-sm font-medium text-gray-600">Total Tidak Hadir</p>
+         <p class="text-2xl font-bold text-gray-900" id="todayAbsent">0</p>
+        </div>
+       </div>
+      </div>
+      <div class="bg-white p-6 rounded-lg shadow-md">
+       <div class="flex items-center">
+        <div class="p-3 bg-blue-100 rounded-full"><span class="text-2xl">👥</span>
+        </div>
+        <div class="ml-4">
+         <p class="text-sm font-medium text-gray-600">Total Siswa</p>
+         <p class="text-2xl font-bold text-gray-900" id="totalStudents">0</p>
+        </div>
+       </div>
+      </div>
+     </div><!-- Charts -->
+     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div class="bg-white p-6 rounded-lg shadow-md">
+       <h3 class="text-lg font-semibold text-gray-900 mb-4">Grafik Kehadiran per Kelas</h3>
+       <canvas id="classChart" width="400" height="300"></canvas>
+      </div>
+      <div class="bg-white p-6 rounded-lg shadow-md">
+       <h3 class="text-lg font-semibold text-gray-900 mb-4">Tren Kehadiran Mingguan</h3>
+       <canvas id="weeklyChart" width="400" height="300"></canvas>
+      </div>
+     </div>
+    </div><!-- Attendance Tab -->
+    <div id="attendanceTab" class="tab-content hidden">
+     <div class="bg-white rounded-lg shadow-md p-6">
+      <div class="flex justify-between items-center mb-6">
+       <h3 class="text-lg font-semibold text-gray-900">Absensi Hari Ini</h3>
+       <div class="flex space-x-4"><select id="classFilter" class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"> <option value="">Semua Kelas</option> <option value="10">Kelas 10</option> <option value="11">Kelas 11</option> <option value="12">Kelas 12</option> </select> <button id="markAllPresent" class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition duration-200"> Tandai Semua Hadir </button>
+       </div>
+      </div>
+      <div class="overflow-x-auto">
+       <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+         <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Siswa</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kelas</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Waktu</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+         </tr>
+        </thead>
+        <tbody id="attendanceTableBody" class="bg-white divide-y divide-gray-200">
+        </tbody>
+       </table>
+      </div>
+     </div>
+    </div><!-- Students Tab -->
+    <div id="studentsTab" class="tab-content hidden">
+     <div class="bg-white rounded-lg shadow-md p-6">
+      <div class="flex justify-between items-center mb-6">
+       <h3 class="text-lg font-semibold text-gray-900">Data Siswa</h3><button id="addStudentBtn" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition duration-200"> Tambah Siswa </button>
+      </div>
+      <div class="overflow-x-auto">
+       <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+         <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">NIS</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kelas</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Username</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Password</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. WA Ortu</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kehadiran</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+         </tr>
+        </thead>
+        <tbody id="studentsTableBody" class="bg-white divide-y divide-gray-200">
+        </tbody>
+       </table>
+      </div>
+     </div>
+    </div><!-- Reports Tab -->
+    <div id="reportsTab" class="tab-content hidden"><!-- Download Reports Section -->
+     <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+      <h3 class="text-lg font-semibold text-gray-900 mb-4">📥 Download Laporan Absensi</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6"><!-- Monthly Reports -->
+       <div class="border rounded-lg p-4">
+        <h4 class="font-medium text-gray-900 mb-3">📅 Laporan Bulanan</h4>
+        <div class="space-y-3">
+         <div class="flex items-center justify-between"><label for="monthlyClass" class="text-sm font-medium text-gray-700">Pilih Kelas:</label> <select id="monthlyClass" class="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"> <option value="">Semua Kelas</option> <option value="10A">10A</option> <option value="10B">10B</option> <option value="11A">11A</option> <option value="11B">11B</option> <option value="12A">12A</option> <option value="12B">12B</option> </select>
+         </div>
+         <div class="flex items-center justify-between"><label for="monthlyPeriod" class="text-sm font-medium text-gray-700">Pilih Bulan:</label> <select id="monthlyPeriod" class="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"> <option value="2024-01">Januari 2024</option> <option value="2024-02">Februari 2024</option> <option value="2024-03">Maret 2024</option> <option value="2024-04">April 2024</option> <option value="2024-05">Mei 2024</option> <option value="2024-06">Juni 2024</option> <option value="2024-07">Juli 2024</option> <option value="2024-08">Agustus 2024</option> <option value="2024-09">September 2024</option> <option value="2024-10">Oktober 2024</option> <option value="2024-11">November 2024</option> <option value="2024-12">Desember 2024</option> </select>
+         </div><button onclick="downloadMonthlyReport()" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition duration-200 text-sm"> 📊 Download Excel </button>
+        </div>
+       </div><!-- Semester Reports -->
+       <div class="border rounded-lg p-4">
+        <h4 class="font-medium text-gray-900 mb-3">📚 Laporan Semester</h4>
+        <div class="space-y-3">
+         <div class="flex items-center justify-between"><label for="semesterClass" class="text-sm font-medium text-gray-700">Pilih Kelas:</label> <select id="semesterClass" class="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"> <option value="">Semua Kelas</option> <option value="10A">10A</option> <option value="10B">10B</option> <option value="11A">11A</option> <option value="11B">11B</option> <option value="12A">12A</option> <option value="12B">12B</option> </select>
+         </div>
+         <div class="flex items-center justify-between"><label for="semesterPeriod" class="text-sm font-medium text-gray-700">Pilih Semester:</label> <select id="semesterPeriod" class="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"> <option value="2024-1">Semester 1 - 2024</option> <option value="2024-2">Semester 2 - 2024</option> <option value="2023-1">Semester 1 - 2023</option> <option value="2023-2">Semester 2 - 2023</option> </select>
+         </div><button onclick="downloadSemesterReport()" class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition duration-200 text-sm"> 📈 Download Excel </button>
+        </div>
+       </div>
+      </div>
+     </div>
+     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div class="bg-white rounded-lg shadow-md p-6">
+       <h3 class="text-lg font-semibold text-gray-900 mb-4">Laporan Bulanan</h3>
+       <div class="space-y-4">
+        <div class="flex justify-between items-center p-4 bg-gray-50 rounded-lg"><span class="font-medium">Kelas 10</span> <span class="text-green-600 font-bold">92.5%</span>
+        </div>
+        <div class="flex justify-between items-center p-4 bg-gray-50 rounded-lg"><span class="font-medium">Kelas 11</span> <span class="text-green-600 font-bold">89.3%</span>
+        </div>
+        <div class="flex justify-between items-center p-4 bg-gray-50 rounded-lg"><span class="font-medium">Kelas 12</span> <span class="text-yellow-600 font-bold">85.7%</span>
+        </div>
+       </div>
+      </div>
+      <div class="bg-white rounded-lg shadow-md p-6">
+       <h3 class="text-lg font-semibold text-gray-900 mb-4">Siswa dengan Kehadiran Rendah</h3>
+       <div class="space-y-3">
+        <div class="flex justify-between items-center p-3 bg-red-50 rounded-lg border-l-4 border-red-400">
+         <div>
+          <p class="font-medium text-gray-900">Ahmad Rizki</p>
+          <p class="text-sm text-gray-600">Kelas 11A</p>
+         </div><span class="text-red-600 font-bold">65%</span>
+        </div>
+        <div class="flex justify-between items-center p-3 bg-yellow-50 rounded-lg border-l-4 border-yellow-400">
+         <div>
+          <p class="font-medium text-gray-900">Siti Nurhaliza</p>
+          <p class="text-sm text-gray-600">Kelas 12B</p>
+         </div><span class="text-yellow-600 font-bold">72%</span>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div><!-- Barcode Tab -->
+    <div id="barcodeTab" class="tab-content hidden">
+     <div class="bg-white rounded-lg shadow-md p-6">
+      <div class="flex justify-between items-center mb-6">
+       <h3 class="text-lg font-semibold text-gray-900">🏷️ QR Code Absensi Siswa</h3>
+       <div class="flex space-x-3"><button id="printAllQRBtn" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition duration-200"> 🖨️ Cetak Semua QR </button> <button id="downloadQRZipBtn" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition duration-200"> 📦 Download ZIP </button>
+       </div>
+      </div><!-- Search and Filter -->
+      <div class="mb-6 flex space-x-4">
+       <div class="flex-1"><input type="text" id="qrSearchInput" placeholder="Cari siswa (nama/NIS)..." class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+       </div><select id="qrClassFilter" class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"> <option value="">Semua Kelas</option> <option value="10A">10A</option> <option value="10B">10B</option> <option value="11A">11A</option> <option value="11B">11B</option> <option value="12A">12A</option> <option value="12B">12B</option> </select>
+      </div><!-- QR Code Grid -->
+      <div id="qrCodeGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"><!-- QR codes will be generated here -->
+      </div>
+     </div>
+    </div><!-- Teachers Tab -->
+    <div id="teachersTab" class="tab-content hidden">
+     <div class="bg-white rounded-lg shadow-md p-6">
+      <div class="flex justify-between items-center mb-6">
+       <h3 class="text-lg font-semibold text-gray-900">Data Wali Kelas</h3><button id="addTeacherBtn" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition duration-200"> Tambah Wali Kelas </button>
+      </div>
+      <div class="overflow-x-auto">
+       <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+         <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kelas</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Username</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Password</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah Siswa</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+         </tr>
+        </thead>
+        <tbody id="teachersTableBody" class="bg-white divide-y divide-gray-200">
+        </tbody>
+       </table>
+      </div>
+     </div>
+    </div>
+   </main>
+  </div><!-- Add Student Modal -->
+  <div id="addStudentModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+   <div class="relative top-10 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
+    <div class="mt-3">
+     <h3 class="text-lg font-medium text-gray-900 mb-4">Tambah Siswa Baru</h3>
+     <form id="addStudentForm" class="space-y-4">
+      <div><label for="studentNIS" class="block text-sm font-medium text-gray-700 mb-1">NIS</label> <input type="text" id="studentNIS" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+      </div>
+      <div><label for="studentName" class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label> <input type="text" id="studentName" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+      </div>
+      <div><label for="studentClass" class="block text-sm font-medium text-gray-700 mb-1">Kelas</label> <select id="studentClass" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"> <option value="">Pilih Kelas</option> <option value="10A">10A</option> <option value="10B">10B</option> <option value="11A">11A</option> <option value="11B">11B</option> <option value="12A">12A</option> <option value="12B">12B</option> </select>
+      </div>
+      <div><label for="studentUsername" class="block text-sm font-medium text-gray-700 mb-1">Username</label> <input type="text" id="studentUsername" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+      </div>
+      <div><label for="studentPassword" class="block text-sm font-medium text-gray-700 mb-1">Password</label> <input type="text" id="studentPassword" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+      </div>
+      <div><label for="parentPhone" class="block text-sm font-medium text-gray-700 mb-1">No. WhatsApp Orang Tua</label> <input type="tel" id="parentPhone" required placeholder="081234567890" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+      </div>
+      <div class="flex justify-end space-x-3 pt-4"><button type="button" id="cancelAddStudent" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition duration-200"> Batal </button> <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition duration-200"> Simpan </button>
+      </div>
+     </form>
+    </div>
+   </div>
+  </div><!-- Edit Student Modal -->
+  <div id="editStudentModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+   <div class="relative top-10 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
+    <div class="mt-3">
+     <h3 class="text-lg font-medium text-gray-900 mb-4">Edit Data Siswa</h3>
+     <form id="editStudentForm" class="space-y-4"><input type="hidden" id="editStudentNIS">
+      <div><label for="editStudentName" class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label> <input type="text" id="editStudentName" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+      </div>
+      <div><label for="editStudentClass" class="block text-sm font-medium text-gray-700 mb-1">Kelas</label> <select id="editStudentClass" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"> <option value="">Pilih Kelas</option> <option value="10A">10A</option> <option value="10B">10B</option> <option value="11A">11A</option> <option value="11B">11B</option> <option value="12A">12A</option> <option value="12B">12B</option> </select>
+      </div>
+      <div><label for="editStudentUsername" class="block text-sm font-medium text-gray-700 mb-1">Username</label> <input type="text" id="editStudentUsername" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+      </div>
+      <div><label for="editStudentPassword" class="block text-sm font-medium text-gray-700 mb-1">Password</label> <input type="text" id="editStudentPassword" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+      </div>
+      <div><label for="editParentPhone" class="block text-sm font-medium text-gray-700 mb-1">No. WhatsApp Orang Tua</label> <input type="tel" id="editParentPhone" required placeholder="081234567890" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+      </div>
+      <div class="flex justify-end space-x-3 pt-4"><button type="button" id="cancelEditStudent" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition duration-200"> Batal </button> <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition duration-200"> Simpan Perubahan </button>
+      </div>
+     </form>
+    </div>
+   </div>
+  </div><!-- Edit Teacher Modal -->
+  <div id="editTeacherModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+   <div class="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
+    <div class="mt-3">
+     <h3 class="text-lg font-medium text-gray-900 mb-4">Edit Data Wali Kelas</h3>
+     <form id="editTeacherForm" class="space-y-4"><input type="hidden" id="editTeacherUsername">
+      <div><label for="editTeacherName" class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label> <input type="text" id="editTeacherName" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+      </div>
+      <div><label for="editTeacherClass" class="block text-sm font-medium text-gray-700 mb-1">Kelas yang Diampu</label> <select id="editTeacherClass" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"> <option value="">Pilih Kelas</option> <option value="10A">10A</option> <option value="10B">10B</option> <option value="11A">11A</option> <option value="11B">11B</option> <option value="12A">12A</option> <option value="12B">12B</option> </select>
+      </div>
+      <div><label for="editTeacherNewUsername" class="block text-sm font-medium text-gray-700 mb-1">Username</label> <input type="text" id="editTeacherNewUsername" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+      </div>
+      <div><label for="editTeacherPassword" class="block text-sm font-medium text-gray-700 mb-1">Password</label> <input type="text" id="editTeacherPassword" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+      </div>
+      <div class="flex justify-end space-x-3 pt-4"><button type="button" id="cancelEditTeacher" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition duration-200"> Batal </button> <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition duration-200"> Simpan Perubahan </button>
+      </div>
+     </form>
+    </div>
+   </div>
+  </div><!-- Logo Settings Modal -->
+  <div id="logoSettingsModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+   <div class="relative top-10 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
+    <div class="mt-3">
+     <h3 class="text-lg font-medium text-gray-900 mb-4">Pengaturan Logo Sekolah</h3><!-- Current Logo Preview -->
+     <div class="mb-6 text-center">
+      <p class="text-sm text-gray-600 mb-2">Logo Saat Ini:</p>
+      <div id="currentLogoPreview" class="flex justify-center"><!-- Logo akan ditampilkan di sini -->
+      </div>
+     </div><!-- Logo Options -->
+     <div class="space-y-4">
+      <div><label class="block text-sm font-medium text-gray-700 mb-2">Pilih Jenis Logo:</label>
+       <div class="space-y-2"><label class="flex items-center"> <input type="radio" name="logoType" value="default" class="mr-2" checked> <span class="text-sm">Logo Default (Perisai)</span> </label> <label class="flex items-center"> <input type="radio" name="logoType" value="school" class="mr-2"> <span class="text-sm">Logo Sekolah (Buku &amp; Pensil)</span> </label> <label class="flex items-center"> <input type="radio" name="logoType" value="graduation" class="mr-2"> <span class="text-sm">Logo Wisuda (Topi Wisuda)</span> </label> <label class="flex items-center"> <input type="radio" name="logoType" value="custom" class="mr-2"> <span class="text-sm">Logo Kustom (URL Gambar)</span> </label>
+       </div>
+      </div><!-- Custom URL Input -->
+      <div id="customUrlSection" class="hidden"><label for="customLogoUrl" class="block text-sm font-medium text-gray-700 mb-1">URL Gambar Logo</label> <input type="url" id="customLogoUrl" placeholder="https://example.com/logo.png" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+       <p class="text-xs text-gray-500 mt-1">Masukkan URL gambar yang valid (PNG, JPG, SVG)</p>
+      </div><!-- Color Customization -->
+      <div id="colorSection"><label class="block text-sm font-medium text-gray-700 mb-2">Warna Logo:</label>
+       <div class="grid grid-cols-4 gap-2"><button type="button" class="color-option w-8 h-8 rounded-full border-2 border-gray-300" data-color="indigo" style="background: linear-gradient(135deg, #6366f1, #3b82f6);"></button> <button type="button" class="color-option w-8 h-8 rounded-full border-2 border-gray-300" data-color="green" style="background: linear-gradient(135deg, #10b981, #059669);"></button> <button type="button" class="color-option w-8 h-8 rounded-full border-2 border-gray-300" data-color="red" style="background: linear-gradient(135deg, #ef4444, #dc2626);"></button> <button type="button" class="color-option w-8 h-8 rounded-full border-2 border-gray-300" data-color="purple" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);"></button> <button type="button" class="color-option w-8 h-8 rounded-full border-2 border-gray-300" data-color="orange" style="background: linear-gradient(135deg, #f97316, #ea580c);"></button> <button type="button" class="color-option w-8 h-8 rounded-full border-2 border-gray-300" data-color="pink" style="background: linear-gradient(135deg, #ec4899, #db2777);"></button> <button type="button" class="color-option w-8 h-8 rounded-full border-2 border-gray-300" data-color="teal" style="background: linear-gradient(135deg, #14b8a6, #0d9488);"></button> <button type="button" class="color-option w-8 h-8 rounded-full border-2 border-gray-300" data-color="gray" style="background: linear-gradient(135deg, #6b7280, #4b5563);"></button>
+       </div>
+      </div><!-- Preview Section -->
+      <div class="border-t pt-4">
+       <p class="text-sm font-medium text-gray-700 mb-2">Preview:</p>
+       <div class="flex justify-center space-x-4">
+        <div class="text-center">
+         <p class="text-xs text-gray-500 mb-1">Login</p>
+         <div id="loginLogoPreview" class="w-16 h-16 mx-auto"><!-- Preview logo login -->
+         </div>
+        </div>
+        <div class="text-center">
+         <p class="text-xs text-gray-500 mb-1">Header</p>
+         <div id="headerLogoPreview" class="w-8 h-8 mx-auto"><!-- Preview logo header -->
+         </div>
+        </div>
+       </div>
+      </div>
+     </div>
+     <div class="flex justify-end space-x-3 pt-6"><button type="button" id="cancelLogoSettings" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition duration-200"> Batal </button> <button type="button" id="saveLogoSettings" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition duration-200"> Simpan Logo </button>
+     </div>
+    </div>
+   </div>
+  </div><!-- Profile Modal -->
+  <div id="profileModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+   <div class="relative top-10 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
+    <div class="mt-3">
+     <div class="flex justify-between items-center mb-4">
+      <h3 class="text-lg font-medium text-gray-900">Profil Saya</h3><button onclick="closeProfileModal()" class="text-gray-400 hover:text-gray-600"> <span class="text-2xl">×</span> </button>
+     </div><!-- Profile Photo Section -->
+     <div class="text-center mb-6">
+      <div class="relative inline-block">
+       <div id="profileModalPhoto" class="w-24 h-24 rounded-full overflow-hidden border-4 border-gray-300 mx-auto mb-4"><img id="profileModalPhotoImg" src="" alt="Foto Profil" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+        <div class="w-full h-full bg-gray-200 flex items-center justify-center text-gray-500 text-lg font-medium"><span id="profileModalInitials"></span>
+        </div>
+       </div><button onclick="changeProfilePhoto()" class="absolute bottom-0 right-0 bg-indigo-600 text-white rounded-full p-2 hover:bg-indigo-700 transition duration-200"> 📷 </button>
+      </div>
+      <p class="text-sm text-gray-600">Klik ikon kamera untuk mengubah foto</p>
+     </div><!-- Profile Info -->
+     <div class="space-y-4">
+      <div><label class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label> <input type="text" id="profileName" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+      </div>
+      <div><label class="block text-sm font-medium text-gray-700 mb-1">Username</label> <input type="text" id="profileUsername" disabled class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-500">
+      </div>
+      <div><label class="block text-sm font-medium text-gray-700 mb-1">Role</label> <input type="text" id="profileRole" disabled class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-500">
+      </div>
+      <div id="profileClassSection" class="hidden"><label class="block text-sm font-medium text-gray-700 mb-1">Kelas</label> <input type="text" id="profileClass" disabled class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-500">
+      </div>
+      <div id="profileNISSection" class="hidden"><label class="block text-sm font-medium text-gray-700 mb-1">NIS</label> <input type="text" id="profileNIS" disabled class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-500">
+      </div>
+      <div><label class="block text-sm font-medium text-gray-700 mb-1">Password Baru (Opsional)</label> <input type="password" id="profileNewPassword" placeholder="Kosongkan jika tidak ingin mengubah" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+      </div>
+     </div>
+     <div class="flex justify-end space-x-3 pt-6"><button onclick="closeProfileModal()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition duration-200"> Batal </button> <button onclick="saveProfile()" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition duration-200"> Simpan Profil </button>
+     </div>
+    </div>
+   </div>
+  </div><!-- Photo Upload Modal -->
+  <div id="photoUploadModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+   <div class="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
+    <div class="mt-3">
+     <h3 class="text-lg font-medium text-gray-900 mb-4">Ubah Foto Profil</h3>
+     <div class="space-y-4">
+      <div><label class="block text-sm font-medium text-gray-700 mb-2">Pilih Metode:</label>
+       <div class="space-y-2"><label class="flex items-center"> <input type="radio" name="photoMethod" value="url" class="mr-2" checked> <span class="text-sm">URL Gambar</span> </label> <label class="flex items-center"> <input type="radio" name="photoMethod" value="avatar" class="mr-2"> <span class="text-sm">Avatar Default</span> </label>
+       </div>
+      </div><!-- URL Input -->
+      <div id="urlPhotoSection"><label for="photoUrl" class="block text-sm font-medium text-gray-700 mb-1">URL Foto</label> <input type="url" id="photoUrl" placeholder="https://example.com/foto.jpg" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+       <p class="text-xs text-gray-500 mt-1">Masukkan URL gambar yang valid (PNG, JPG)</p>
+      </div><!-- Avatar Selection -->
+      <div id="avatarPhotoSection" class="hidden"><label class="block text-sm font-medium text-gray-700 mb-2">Pilih Avatar:</label>
+       <div class="grid grid-cols-4 gap-3"><button type="button" class="avatar-option w-12 h-12 rounded-full border-2 border-gray-300 overflow-hidden hover:border-indigo-500" data-avatar="1">
+         <div class="w-full h-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold">
+          👨
+         </div></button> <button type="button" class="avatar-option w-12 h-12 rounded-full border-2 border-gray-300 overflow-hidden hover:border-indigo-500" data-avatar="2">
+         <div class="w-full h-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-white font-bold">
+          👩
+         </div></button> <button type="button" class="avatar-option w-12 h-12 rounded-full border-2 border-gray-300 overflow-hidden hover:border-indigo-500" data-avatar="3">
+         <div class="w-full h-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-white font-bold">
+          🧑
+         </div></button> <button type="button" class="avatar-option w-12 h-12 rounded-full border-2 border-gray-300 overflow-hidden hover:border-indigo-500" data-avatar="4">
+         <div class="w-full h-full bg-gradient-to-br from-pink-400 to-pink-600 flex items-center justify-center text-white font-bold">
+          👤
+         </div></button> <button type="button" class="avatar-option w-12 h-12 rounded-full border-2 border-gray-300 overflow-hidden hover:border-indigo-500" data-avatar="5">
+         <div class="w-full h-full bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center text-white font-bold">
+          😊
+         </div></button> <button type="button" class="avatar-option w-12 h-12 rounded-full border-2 border-gray-300 overflow-hidden hover:border-indigo-500" data-avatar="6">
+         <div class="w-full h-full bg-gradient-to-br from-red-400 to-red-600 flex items-center justify-center text-white font-bold">
+          🎓
+         </div></button> <button type="button" class="avatar-option w-12 h-12 rounded-full border-2 border-gray-300 overflow-hidden hover:border-indigo-500" data-avatar="7">
+         <div class="w-full h-full bg-gradient-to-br from-indigo-400 to-indigo-600 flex items-center justify-center text-white font-bold">
+          📚
+         </div></button> <button type="button" class="avatar-option w-12 h-12 rounded-full border-2 border-gray-300 overflow-hidden hover:border-indigo-500" data-avatar="8">
+         <div class="w-full h-full bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center text-white font-bold">
+          ✨
+         </div></button>
+       </div>
+      </div><!-- Preview -->
+      <div class="border-t pt-4">
+       <p class="text-sm font-medium text-gray-700 mb-2">Preview:</p>
+       <div class="flex justify-center">
+        <div id="photoPreview" class="w-16 h-16 rounded-full overflow-hidden border-2 border-gray-300">
+         <div class="w-full h-full bg-gray-200 flex items-center justify-center text-gray-500 text-sm">
+          Preview
+         </div>
+        </div>
+       </div>
+      </div>
+     </div>
+     <div class="flex justify-end space-x-3 pt-6"><button onclick="closePhotoUploadModal()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition duration-200"> Batal </button> <button onclick="saveProfilePhoto()" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition duration-200"> Simpan Foto </button>
+     </div>
+    </div>
+   </div>
+  </div><!-- Absent Reason Modal -->
+  <div id="absentReasonModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+   <div class="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
+    <div class="mt-3">
+     <h3 class="text-lg font-medium text-gray-900 mb-4">Pilih Alasan Tidak Hadir</h3>
+     <div class="space-y-3"><button onclick="markAttendanceWithReason('izin')" class="w-full text-left p-3 border border-gray-300 rounded-md hover:bg-blue-50 hover:border-blue-300 transition duration-200">
+       <div class="flex items-center"><span class="text-2xl mr-3">📝</span>
+        <div>
+         <p class="font-medium text-gray-900">Izin</p>
+         <p class="text-sm text-gray-600">Siswa meminta izin dengan alasan tertentu</p>
+        </div>
+       </div></button> <button onclick="markAttendanceWithReason('sakit')" class="w-full text-left p-3 border border-gray-300 rounded-md hover:bg-yellow-50 hover:border-yellow-300 transition duration-200">
+       <div class="flex items-center"><span class="text-2xl mr-3">🏥</span>
+        <div>
+         <p class="font-medium text-gray-900">Sakit</p>
+         <p class="text-sm text-gray-600">Siswa tidak hadir karena sakit</p>
+        </div>
+       </div></button> <button onclick="markAttendanceWithReason('alfa')" class="w-full text-left p-3 border border-gray-300 rounded-md hover:bg-red-50 hover:border-red-300 transition duration-200">
+       <div class="flex items-center"><span class="text-2xl mr-3">❌</span>
+        <div>
+         <p class="font-medium text-gray-900">Alfa</p>
+         <p class="text-sm text-gray-600">Siswa tidak hadir tanpa keterangan</p>
+        </div>
+       </div></button>
+     </div>
+     <div class="flex justify-end space-x-3 pt-6"><button onclick="closeAbsentReasonModal()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition duration-200"> Batal </button>
+     </div>
+    </div>
+   </div>
+  </div><!-- Student Self Absent Modal -->
+  <div id="studentAbsentModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+   <div class="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
+    <div class="mt-3">
+     <h3 class="text-lg font-medium text-gray-900 mb-4">Lapor Ketidakhadiran</h3>
+     <p class="text-sm text-gray-600 mb-4">Jika Anda tidak dapat hadir hari ini, silakan pilih alasan:</p>
+     <div class="space-y-3"><button onclick="studentSelfAbsent('izin')" class="w-full text-left p-3 border border-gray-300 rounded-md hover:bg-blue-50 hover:border-blue-300 transition duration-200">
+       <div class="flex items-center"><span class="text-2xl mr-3">📝</span>
+        <div>
+         <p class="font-medium text-gray-900">Izin</p>
+         <p class="text-sm text-gray-600">Saya meminta izin tidak hadir</p>
+        </div>
+       </div></button> <button onclick="studentSelfAbsent('sakit')" class="w-full text-left p-3 border border-gray-300 rounded-md hover:bg-yellow-50 hover:border-yellow-300 transition duration-200">
+       <div class="flex items-center"><span class="text-2xl mr-3">🏥</span>
+        <div>
+         <p class="font-medium text-gray-900">Sakit</p>
+         <p class="text-sm text-gray-600">Saya tidak hadir karena sakit</p>
+        </div>
+       </div></button>
+     </div>
+     <div class="flex justify-end space-x-3 pt-6"><button onclick="closeStudentAbsentModal()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition duration-200"> Batal </button>
+     </div>
+    </div>
+   </div>
+  </div><!-- Add Teacher Modal -->
+  <div id="addTeacherModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+   <div class="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
+    <div class="mt-3">
+     <h3 class="text-lg font-medium text-gray-900 mb-4">Tambah Wali Kelas Baru</h3>
+     <form id="addTeacherForm" class="space-y-4">
+      <div><label for="teacherName" class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label> <input type="text" id="teacherName" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+      </div>
+      <div><label for="teacherClass" class="block text-sm font-medium text-gray-700 mb-1">Kelas yang Diampu</label> <select id="teacherClass" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"> <option value="">Pilih Kelas</option> <option value="10A">10A</option> <option value="10B">10B</option> <option value="11A">11A</option> <option value="11B">11B</option> <option value="12A">12A</option> <option value="12B">12B</option> </select>
+      </div>
+      <div><label for="teacherUsername" class="block text-sm font-medium text-gray-700 mb-1">Username</label> <input type="text" id="teacherUsername" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+      </div>
+      <div><label for="teacherPassword" class="block text-sm font-medium text-gray-700 mb-1">Password</label> <input type="text" id="teacherPassword" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+      </div>
+      <div class="flex justify-end space-x-3 pt-4"><button type="button" id="cancelAddTeacher" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition duration-200"> Batal </button> <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition duration-200"> Simpan </button>
+      </div>
+     </form>
+    </div>
+   </div>
+  </div>
+  <script>
+        // Database simulation using localStorage
+        class Database {
+            constructor() {
+                this.initializeData();
+            }
+
+            initializeData() {
+                if (!localStorage.getItem('attendanceDB')) {
+                    const initialData = {
+                        users: [
+                            { username: 'admin', password: 'admin123', role: 'admin', name: 'Administrator' },
+                            { username: 'wali10a', password: 'wali123', role: 'wali_kelas', name: 'Pak Budi Santoso', class: '10A' },
+                            { username: 'wali11a', password: 'wali123', role: 'wali_kelas', name: 'Bu Sari Dewi', class: '11A' },
+                            { username: 'wali12a', password: 'wali123', role: 'wali_kelas', name: 'Pak Ahmad Rahman', class: '12A' },
+                            { username: 'ahmad2021', password: 'siswa123', role: 'siswa', name: 'Ahmad Rizki', nis: '2021001' },
+                            { username: 'siti2021', password: 'siswa123', role: 'siswa', name: 'Siti Nurhaliza', nis: '2021002' },
+                            { username: 'budi2021', password: 'siswa123', role: 'siswa', name: 'Budi Santoso', nis: '2021003' }
+                        ],
+                        students: [
+                            { nis: '2021001', name: 'Ahmad Rizki', class: '10A', attendance: 85, parentPhone: '081234567890', username: 'ahmad2021', password: 'siswa123' },
+                            { nis: '2021002', name: 'Siti Nurhaliza', class: '10A', attendance: 92, parentPhone: '081234567891', username: 'siti2021', password: 'siswa123' },
+                            { nis: '2021003', name: 'Budi Santoso', class: '10B', attendance: 88, parentPhone: '081234567892', username: 'budi2021', password: 'siswa123' },
+                            { nis: '2021004', name: 'Dewi Sartika', class: '11A', attendance: 95, parentPhone: '081234567893', username: 'dewi2021', password: 'siswa123' },
+                            { nis: '2021005', name: 'Eko Prasetyo', class: '11A', attendance: 78, parentPhone: '081234567894', username: 'eko2021', password: 'siswa123' },
+                            { nis: '2021006', name: 'Fitri Handayani', class: '11B', attendance: 90, parentPhone: '081234567895', username: 'fitri2021', password: 'siswa123' },
+                            { nis: '2021007', name: 'Gilang Ramadhan', class: '12A', attendance: 87, parentPhone: '081234567896', username: 'gilang2021', password: 'siswa123' },
+                            { nis: '2021008', name: 'Hani Permata', class: '12A', attendance: 93, parentPhone: '081234567897', username: 'hani2021', password: 'siswa123' },
+                            { nis: '2021009', name: 'Indra Gunawan', class: '12B', attendance: 82, parentPhone: '081234567898', username: 'indra2021', password: 'siswa123' }
+                        ],
+                        attendance: [],
+                        attendanceHistory: []
+                    };
+                    localStorage.setItem('attendanceDB', JSON.stringify(initialData));
+                }
+            }
+
+            getData() {
+                return JSON.parse(localStorage.getItem('attendanceDB'));
+            }
+
+            saveData(data) {
+                localStorage.setItem('attendanceDB', JSON.stringify(data));
+            }
+
+            addStudent(student) {
+                const data = this.getData();
+                student.attendance = 100; // Default attendance
+                data.students.push(student);
+                this.saveData(data);
+            }
+
+            updateAttendance(nis, status) {
+                const data = this.getData();
+                const today = new Date().toISOString().split('T')[0];
+                
+                // Remove existing attendance for today
+                data.attendance = data.attendance.filter(a => !(a.nis === nis && a.date === today));
+                
+                // Add new attendance record
+                data.attendance.push({
+                    nis: nis,
+                    date: today,
+                    status: status,
+                    timestamp: new Date().toISOString()
+                });
+                
+                this.saveData(data);
+            }
+        }
+
+        // Initialize database
+        const db = new Database();
+        let currentUser = null;
+        let classChart = null;
+        let weeklyChart = null;
+        let currentLogoSettings = {
+            type: 'default',
+            color: 'indigo',
+            customUrl: ''
+        };
+
+        // Login functionality
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const userType = document.getElementById('userType').value;
+            
+            const data = db.getData();
+            const user = data.users.find(u => 
+                u.username === username && 
+                u.password === password && 
+                u.role === userType
+            );
+            
+            if (user) {
+                currentUser = user;
+                showDashboard();
+            } else {
+                alert('Username, password, atau role tidak valid!');
+            }
+        });
+
+        // Show dashboard
+        function showDashboard() {
+            document.getElementById('loginPage').classList.add('hidden');
+            document.getElementById('dashboard').classList.remove('hidden');
+            document.getElementById('currentUser').textContent = currentUser.name;
+            document.getElementById('userRole').textContent = currentUser.role.replace('_', ' ').toUpperCase();
+            
+            // Initialize profile photo
+            initializeProfilePhoto();
+            
+            // Customize navigation based on user role
+            customizeNavigation();
+            
+            // Show default tab
+            showTab('overview');
+            updateDashboardData();
+            initializeCharts();
+        }
+
+        // Customize navigation based on user role
+        function customizeNavigation() {
+            const navButtons = document.querySelectorAll('.nav-btn');
+            const logoSettingsBtn = document.getElementById('logoSettingsBtn');
+            
+            if (currentUser.role === 'siswa') {
+                // Siswa hanya bisa lihat overview, absensi pribadi, dan barcode pribadi
+                navButtons.forEach(btn => {
+                    const tab = btn.getAttribute('data-tab');
+                    if (tab === 'students' || tab === 'reports' || tab === 'teachers') {
+                        btn.style.display = 'none';
+                    } else {
+                        btn.style.display = 'block';
+                    }
+                });
+                
+                // Update tab labels for students
+                document.querySelector('[data-tab="overview"]').innerHTML = '📊 Dashboard Saya';
+                document.querySelector('[data-tab="attendance"]').innerHTML = '✅ Absensi Saya';
+                document.querySelector('[data-tab="barcode"]').innerHTML = '🏷️ QR Code Saya';
+                
+                // Hide logo settings button for students
+                logoSettingsBtn.style.display = 'none';
+                
+            } else if (currentUser.role === 'wali_kelas') {
+                // Wali kelas hanya bisa lihat overview dan absensi kelas
+                navButtons.forEach(btn => {
+                    const tab = btn.getAttribute('data-tab');
+                    if (tab === 'students' || tab === 'teachers' || tab === 'reports' || tab === 'barcode') {
+                        btn.style.display = 'none';
+                    } else {
+                        btn.style.display = 'block';
+                    }
+                });
+                
+                // Update tab labels for teachers
+                document.querySelector('[data-tab="overview"]').innerHTML = '📊 Overview Kelas';
+                document.querySelector('[data-tab="attendance"]').innerHTML = '✅ Absensi Kelas';
+                
+                // Hide logo settings button for teachers
+                logoSettingsBtn.style.display = 'none';
+                
+            } else {
+                // Admin bisa lihat semua
+                navButtons.forEach(btn => {
+                    btn.style.display = 'block';
+                });
+                
+                // Show logo settings button for admin
+                logoSettingsBtn.style.display = 'block';
+            }
+        }
+
+        // Logo settings functionality
+        document.getElementById('logoSettingsBtn').addEventListener('click', function() {
+            loadLogoSettings();
+            document.getElementById('logoSettingsModal').classList.remove('hidden');
+        });
+
+        document.getElementById('cancelLogoSettings').addEventListener('click', function() {
+            document.getElementById('logoSettingsModal').classList.add('hidden');
+        });
+
+        document.getElementById('saveLogoSettings').addEventListener('click', function() {
+            saveLogoSettings();
+        });
+
+        // Logout functionality
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            currentUser = null;
+            document.getElementById('dashboard').classList.add('hidden');
+            document.getElementById('loginPage').classList.remove('hidden');
+            document.getElementById('loginForm').reset();
+        });
+
+        // Tab navigation
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const tabName = this.getAttribute('data-tab');
+                showTab(tabName);
+            });
+        });
+
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.add('hidden');
+            });
+            
+            // Remove active state from all nav buttons
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('border-white');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName + 'Tab').classList.remove('hidden');
+            document.getElementById(tabName + 'Tab').classList.add('fade-in');
+            
+            // Add active state to clicked nav button
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('border-white');
+            
+            // Update tab-specific data
+            if (tabName === 'attendance') {
+                updateAttendanceTable();
+            } else if (tabName === 'students') {
+                updateStudentsTable();
+            } else if (tabName === 'teachers') {
+                updateTeachersTable();
+            } else if (tabName === 'barcode') {
+                updateBarcodeTab();
+            }
+        }
+
+        // Update dashboard data
+        function updateDashboardData() {
+            const data = db.getData();
+            const today = new Date().toISOString().split('T')[0];
+            
+            if (currentUser.role === 'siswa') {
+                // Data untuk siswa - hanya data pribadi
+                const studentData = data.students.find(s => s.nis === currentUser.nis);
+                const studentAttendance = data.attendance.filter(a => a.nis === currentUser.nis);
+                const todayAttendance = studentAttendance.find(a => a.date === today);
+                
+                document.getElementById('todayPresent').textContent = todayAttendance ? (todayAttendance.status === 'hadir' ? '1' : '0') : '0';
+                document.getElementById('todayAbsent').textContent = todayAttendance ? (todayAttendance.status === 'tidak_hadir' ? '1' : '0') : '0';
+                document.getElementById('totalStudents').textContent = studentAttendance.length + ' Hari';
+                
+                // Update labels untuk siswa
+                document.querySelector('#todayPresent').parentElement.querySelector('p').textContent = 'Status Hari Ini';
+                document.querySelector('#todayAbsent').parentElement.querySelector('p').textContent = 'Total Tidak Hadir';
+                document.querySelector('#totalStudents').parentElement.querySelector('p').textContent = 'Total Hari Masuk';
+                
+            } else if (currentUser.role === 'wali_kelas') {
+                // Data untuk wali kelas - hanya siswa di kelasnya
+                const classStudents = data.students.filter(s => s.class === currentUser.class);
+                const todayAttendance = data.attendance.filter(a => a.date === today);
+                const presentCount = todayAttendance.filter(a => a.status === 'hadir' && 
+                    classStudents.some(s => s.nis === a.nis)).length;
+                const absentCount = classStudents.length - presentCount;
+                
+                document.getElementById('todayPresent').textContent = presentCount;
+                document.getElementById('todayAbsent').textContent = absentCount;
+                document.getElementById('totalStudents').textContent = classStudents.length;
+                
+            } else {
+                // Data untuk admin - semua siswa
+                const todayAttendance = data.attendance.filter(a => a.date === today);
+                const presentCount = todayAttendance.filter(a => a.status === 'hadir').length;
+                const absentCount = data.students.length - presentCount;
+                
+                document.getElementById('todayPresent').textContent = presentCount;
+                document.getElementById('todayAbsent').textContent = absentCount;
+                document.getElementById('totalStudents').textContent = data.students.length;
+            }
+        }
+
+        // Initialize charts
+        function initializeCharts() {
+            const data = db.getData();
+            
+            if (currentUser.role === 'siswa') {
+                // Chart untuk siswa - grafik kehadiran semester
+                const studentAttendance = data.attendance.filter(a => a.nis === currentUser.nis);
+                const monthlyData = generateMonthlyAttendance(studentAttendance);
+                
+                const ctx1 = document.getElementById('classChart').getContext('2d');
+                classChart = new Chart(ctx1, {
+                    type: 'line',
+                    data: {
+                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun'],
+                        datasets: [{
+                            label: 'Kehadiran Saya (%)',
+                            data: monthlyData,
+                            borderColor: '#10B981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Grafik Kehadiran Semester'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100
+                            }
+                        }
+                    }
+                });
+                
+                // Chart kedua untuk siswa - perbandingan dengan rata-rata kelas
+                const studentData = data.students.find(s => s.nis === currentUser.nis);
+                const classmates = data.students.filter(s => s.class === studentData.class);
+                const classAverage = classmates.reduce((sum, s) => sum + s.attendance, 0) / classmates.length;
+                
+                const ctx2 = document.getElementById('weeklyChart').getContext('2d');
+                weeklyChart = new Chart(ctx2, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Kehadiran Saya', 'Rata-rata Kelas'],
+                        datasets: [{
+                            data: [studentData.attendance, classAverage],
+                            backgroundColor: ['#10B981', '#E5E7EB'],
+                            borderColor: ['#059669', '#D1D5DB'],
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Perbandingan dengan Rata-rata Kelas'
+                            }
+                        }
+                    }
+                });
+                
+            } else if (currentUser.role === 'wali_kelas') {
+                // Chart untuk wali kelas - hanya siswa di kelasnya
+                const classStudents = data.students.filter(s => s.class === currentUser.class);
+                
+                const ctx1 = document.getElementById('classChart').getContext('2d');
+                classChart = new Chart(ctx1, {
+                    type: 'bar',
+                    data: {
+                        labels: classStudents.map(s => s.name.split(' ')[0]),
+                        datasets: [{
+                            label: 'Tingkat Kehadiran (%)',
+                            data: classStudents.map(s => s.attendance),
+                            backgroundColor: '#3B82F6',
+                            borderColor: '#2563EB',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: `Kehadiran Siswa Kelas ${currentUser.class}`
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100
+                            }
+                        }
+                    }
+                });
+                
+                // Weekly trend untuk kelas
+                const ctx2 = document.getElementById('weeklyChart').getContext('2d');
+                weeklyChart = new Chart(ctx2, {
+                    type: 'line',
+                    data: {
+                        labels: ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'],
+                        datasets: [{
+                            label: `Kehadiran Kelas ${currentUser.class} (%)`,
+                            data: [92, 88, 95, 87, 90],
+                            borderColor: '#3B82F6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Tren Kehadiran Mingguan'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100
+                            }
+                        }
+                    }
+                });
+                
+            } else {
+                // Chart untuk admin - semua kelas
+                const classData = {
+                    '10': data.students.filter(s => s.class.startsWith('10')),
+                    '11': data.students.filter(s => s.class.startsWith('11')),
+                    '12': data.students.filter(s => s.class.startsWith('12'))
+                };
+                
+                const classAttendance = {
+                    '10': classData['10'].reduce((sum, s) => sum + s.attendance, 0) / classData['10'].length || 0,
+                    '11': classData['11'].reduce((sum, s) => sum + s.attendance, 0) / classData['11'].length || 0,
+                    '12': classData['12'].reduce((sum, s) => sum + s.attendance, 0) / classData['12'].length || 0
+                };
+                
+                const ctx1 = document.getElementById('classChart').getContext('2d');
+                classChart = new Chart(ctx1, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Kelas 10', 'Kelas 11', 'Kelas 12'],
+                        datasets: [{
+                            label: 'Tingkat Kehadiran (%)',
+                            data: [classAttendance['10'], classAttendance['11'], classAttendance['12']],
+                            backgroundColor: ['#3B82F6', '#10B981', '#F59E0B'],
+                            borderColor: ['#2563EB', '#059669', '#D97706'],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100
+                            }
+                        }
+                    }
+                });
+                
+                // Weekly trend chart
+                const ctx2 = document.getElementById('weeklyChart').getContext('2d');
+                weeklyChart = new Chart(ctx2, {
+                    type: 'line',
+                    data: {
+                        labels: ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'],
+                        datasets: [{
+                            label: 'Kehadiran (%)',
+                            data: [92, 88, 95, 87, 90],
+                            borderColor: '#3B82F6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // Generate monthly attendance data for students
+        function generateMonthlyAttendance(attendanceData) {
+            // Simulasi data bulanan berdasarkan attendance record
+            const baseAttendance = 85;
+            return [
+                baseAttendance + Math.random() * 10,
+                baseAttendance + Math.random() * 10,
+                baseAttendance + Math.random() * 10,
+                baseAttendance + Math.random() * 10,
+                baseAttendance + Math.random() * 10,
+                baseAttendance + Math.random() * 10
+            ];
+        }
+
+        // Update attendance table
+        function updateAttendanceTable() {
+            const data = db.getData();
+            const today = new Date().toISOString().split('T')[0];
+            const todayAttendance = data.attendance.filter(a => a.date === today);
+            
+            const tbody = document.getElementById('attendanceTableBody');
+            tbody.innerHTML = '';
+            
+            let studentsToShow = [];
+            
+            if (currentUser.role === 'siswa') {
+                // Siswa hanya lihat data pribadi
+                studentsToShow = data.students.filter(s => s.nis === currentUser.nis);
+                
+                // Update header untuk siswa
+                const attendanceTab = document.getElementById('attendanceTab');
+                attendanceTab.querySelector('h3').textContent = 'Absensi Saya';
+                
+                // Hide filter dan mark all button untuk siswa
+                document.getElementById('classFilter').style.display = 'none';
+                document.getElementById('markAllPresent').style.display = 'none';
+                
+            } else if (currentUser.role === 'wali_kelas') {
+                // Wali kelas hanya lihat siswa di kelasnya
+                studentsToShow = data.students.filter(s => s.class === currentUser.class);
+                
+            } else {
+                // Admin lihat semua siswa
+                studentsToShow = data.students;
+            }
+            
+            studentsToShow.forEach(student => {
+                const attendance = todayAttendance.find(a => a.nis === student.nis);
+                const status = attendance ? attendance.status : 'belum_absen';
+                const timestamp = attendance ? new Date(attendance.timestamp).toLocaleTimeString('id-ID') : '-';
+                
+                const row = document.createElement('tr');
+                
+                if (currentUser.role === 'siswa') {
+                    // Tampilan khusus untuk siswa - bisa absen sendiri
+                    row.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${student.name}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${student.class}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(status)}">
+                                ${getStatusText(status)}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${timestamp}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            ${status === 'belum_absen' ? 
+                                `<div class="flex space-x-2">
+                                    <button onclick="studentSelfAttendance('${student.nis}')" 
+                                            class="bg-green-500 text-white px-3 py-2 rounded-md hover:bg-green-600 transition duration-200 text-sm">
+                                        Hadir
+                                    </button>
+                                    <button onclick="showStudentAbsentModal('${student.nis}')" 
+                                            class="bg-red-500 text-white px-3 py-2 rounded-md hover:bg-red-600 transition duration-200 text-sm">
+                                        Tidak Hadir
+                                    </button>
+                                </div>` : 
+                                '<span class="text-gray-500">Sudah Absen</span>'
+                            }
+                        </td>
+                    `;
+                } else {
+                    // Tampilan untuk admin dan wali kelas
+                    row.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${student.name}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${student.class}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(status)}">
+                                ${getStatusText(status)}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${timestamp}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <button onclick="markAttendance('${student.nis}', 'hadir')" 
+                                    class="text-green-600 hover:text-green-900 mr-2">Hadir</button>
+                            <button onclick="showAbsentReasonModal('${student.nis}')" 
+                                    class="text-red-600 hover:text-red-900">Tidak Hadir</button>
+                        </td>
+                    `;
+                }
+                tbody.appendChild(row);
+            });
+        }
+
+        // Mark attendance
+        function markAttendance(nis, status) {
+            db.updateAttendance(nis, status);
+            updateAttendanceTable();
+            updateDashboardData();
+        }
+
+        // Student self attendance with WhatsApp notification
+        function studentSelfAttendance(nis) {
+            const data = db.getData();
+            const student = data.students.find(s => s.nis === nis);
+            
+            if (!student) return;
+            
+            // Mark attendance
+            db.updateAttendance(nis, 'hadir');
+            
+            // Send WhatsApp notification to parent
+            sendWhatsAppNotification(student);
+            
+            // Show success message
+            showNotification(`Absensi berhasil! Notifikasi telah dikirim ke orang tua.`, 'success');
+            
+            // Update displays
+            updateAttendanceTable();
+            updateDashboardData();
+        }
+
+        // Send WhatsApp notification (simulation)
+        function sendWhatsAppNotification(student) {
+            const now = new Date();
+            const time = now.toLocaleTimeString('id-ID');
+            const date = now.toLocaleDateString('id-ID');
+            
+            const message = `Assalamualaikum, 
+            
+Kami informasikan bahwa ${student.name} (${student.class}) telah hadir di sekolah pada:
+
+📅 Tanggal: ${date}
+🕐 Waktu: ${time}
+
+Terima kasih.
+
+SMA Negeri 1 Jakarta`;
+            
+            // Simulate WhatsApp API call
+            console.log(`Sending WhatsApp to ${student.parentPhone}:`, message);
+            
+            // In real implementation, you would call WhatsApp Business API here
+            // Example: 
+            // fetch('/api/send-whatsapp', {
+            //     method: 'POST',
+            //     headers: { 'Content-Type': 'application/json' },
+            //     body: JSON.stringify({
+            //         phone: student.parentPhone,
+            //         message: message
+            //     })
+            // });
+        }
+
+        // Show notification
+        function showNotification(message, type = 'info') {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg max-w-sm ${
+                type === 'success' ? 'bg-green-500 text-white' : 
+                type === 'error' ? 'bg-red-500 text-white' : 
+                'bg-blue-500 text-white'
+            }`;
+            notification.innerHTML = `
+                <div class="flex items-center">
+                    <span class="mr-2">${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'}</span>
+                    <p class="text-sm">${message}</p>
+                    <button onclick="this.parentElement.parentElement.remove()" class="ml-2 text-white hover:text-gray-200">
+                        ✕
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.remove();
+                }
+            }, 5000);
+        }
+
+        // Mark all present
+        document.getElementById('markAllPresent').addEventListener('click', function() {
+            const data = db.getData();
+            data.students.forEach(student => {
+                db.updateAttendance(student.nis, 'hadir');
+            });
+            updateAttendanceTable();
+            updateDashboardData();
+        });
+
+        // Update students table
+        function updateStudentsTable() {
+            const data = db.getData();
+            const tbody = document.getElementById('studentsTableBody');
+            tbody.innerHTML = '';
+            
+            let studentsToShow = [];
+            
+            if (currentUser.role === 'wali_kelas') {
+                // Wali kelas hanya lihat siswa di kelasnya
+                studentsToShow = data.students.filter(s => s.class === currentUser.class);
+            } else {
+                // Admin lihat semua siswa
+                studentsToShow = data.students;
+            }
+            
+            studentsToShow.forEach(student => {
+                const row = document.createElement('tr');
+                
+                if (currentUser.role === 'admin') {
+                    // Tampilan lengkap untuk admin dengan data akun
+                    row.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${student.nis}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${student.name}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${student.class}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${student.username || '-'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <span class="font-mono bg-gray-100 px-2 py-1 rounded text-xs">${student.password || '-'}</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${student.parentPhone || '-'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="w-16 bg-gray-200 rounded-full h-2 mr-2">
+                                    <div class="bg-green-600 h-2 rounded-full" style="width: ${student.attendance}%"></div>
+                                </div>
+                                <span class="text-sm text-gray-900">${student.attendance}%</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <button onclick="editStudent('${student.nis}')" 
+                                    class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</button>
+                            <button onclick="deleteStudent('${student.nis}')" 
+                                    class="text-red-600 hover:text-red-900">Hapus</button>
+                        </td>
+                    `;
+                } else {
+                    // Tampilan sederhana untuk wali kelas
+                    row.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${student.nis}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${student.name}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${student.class}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">-</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">-</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">-</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="w-16 bg-gray-200 rounded-full h-2 mr-2">
+                                    <div class="bg-green-600 h-2 rounded-full" style="width: ${student.attendance}%"></div>
+                                </div>
+                                <span class="text-sm text-gray-900">${student.attendance}%</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <button onclick="viewStudentDetail('${student.nis}')" 
+                                    class="text-indigo-600 hover:text-indigo-900">Detail</button>
+                        </td>
+                    `;
+                }
+                tbody.appendChild(row);
+            });
+        }
+
+        // Update teachers table
+        function updateTeachersTable() {
+            const data = db.getData();
+            const tbody = document.getElementById('teachersTableBody');
+            tbody.innerHTML = '';
+            
+            // Get all wali kelas users
+            const teachers = data.users.filter(u => u.role === 'wali_kelas');
+            
+            teachers.forEach(teacher => {
+                const classStudents = data.students.filter(s => s.class === teacher.class);
+                const row = document.createElement('tr');
+                
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${teacher.name}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${teacher.class}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${teacher.username}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <span class="font-mono bg-gray-100 px-2 py-1 rounded text-xs">${teacher.password}</span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${classStudents.length} siswa</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button onclick="editTeacher('${teacher.username}')" 
+                                class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</button>
+                        <button onclick="deleteTeacher('${teacher.username}')" 
+                                class="text-red-600 hover:text-red-900">Hapus</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Add student modal
+        document.getElementById('addStudentBtn').addEventListener('click', function() {
+            document.getElementById('addStudentModal').classList.remove('hidden');
+        });
+
+        document.getElementById('cancelAddStudent').addEventListener('click', function() {
+            document.getElementById('addStudentModal').classList.add('hidden');
+            document.getElementById('addStudentForm').reset();
+        });
+
+        // Add teacher modal
+        document.getElementById('addTeacherBtn').addEventListener('click', function() {
+            document.getElementById('addTeacherModal').classList.remove('hidden');
+        });
+
+        document.getElementById('cancelAddTeacher').addEventListener('click', function() {
+            document.getElementById('addTeacherModal').classList.add('hidden');
+            document.getElementById('addTeacherForm').reset();
+        });
+
+        // Edit student modal
+        document.getElementById('cancelEditStudent').addEventListener('click', function() {
+            document.getElementById('editStudentModal').classList.add('hidden');
+            document.getElementById('editStudentForm').reset();
+        });
+
+        // Edit teacher modal
+        document.getElementById('cancelEditTeacher').addEventListener('click', function() {
+            document.getElementById('editTeacherModal').classList.add('hidden');
+            document.getElementById('editTeacherForm').reset();
+        });
+
+        document.getElementById('addStudentForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const student = {
+                nis: document.getElementById('studentNIS').value,
+                name: document.getElementById('studentName').value,
+                class: document.getElementById('studentClass').value,
+                username: document.getElementById('studentUsername').value,
+                password: document.getElementById('studentPassword').value,
+                parentPhone: document.getElementById('parentPhone').value
+            };
+            
+            // Tambahkan user account untuk siswa
+            const data = db.getData();
+            data.users.push({
+                username: student.username,
+                password: student.password,
+                role: 'siswa',
+                name: student.name,
+                nis: student.nis
+            });
+            db.saveData(data);
+            
+            db.addStudent(student);
+            document.getElementById('addStudentModal').classList.add('hidden');
+            document.getElementById('addStudentForm').reset();
+            updateStudentsTable();
+            updateDashboardData();
+            showNotification('Siswa dan akun berhasil ditambahkan!', 'success');
+        });
+
+        document.getElementById('addTeacherForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const teacher = {
+                name: document.getElementById('teacherName').value,
+                class: document.getElementById('teacherClass').value,
+                username: document.getElementById('teacherUsername').value,
+                password: document.getElementById('teacherPassword').value
+            };
+            
+            // Check if class already has a teacher
+            const data = db.getData();
+            const existingTeacher = data.users.find(u => u.role === 'wali_kelas' && u.class === teacher.class);
+            
+            if (existingTeacher) {
+                showNotification(`Kelas ${teacher.class} sudah memiliki wali kelas!`, 'error');
+                return;
+            }
+            
+            // Add teacher account
+            data.users.push({
+                username: teacher.username,
+                password: teacher.password,
+                role: 'wali_kelas',
+                name: teacher.name,
+                class: teacher.class
+            });
+            db.saveData(data);
+            
+            document.getElementById('addTeacherModal').classList.add('hidden');
+            document.getElementById('addTeacherForm').reset();
+            updateTeachersTable();
+            showNotification('Wali kelas berhasil ditambahkan!', 'success');
+        });
+
+        // Edit student form handler
+        document.getElementById('editStudentForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const nis = document.getElementById('editStudentNIS').value;
+            const updatedStudent = {
+                nis: nis,
+                name: document.getElementById('editStudentName').value,
+                class: document.getElementById('editStudentClass').value,
+                username: document.getElementById('editStudentUsername').value,
+                password: document.getElementById('editStudentPassword').value,
+                parentPhone: document.getElementById('editParentPhone').value
+            };
+            
+            const data = db.getData();
+            
+            // Update student data
+            const studentIndex = data.students.findIndex(s => s.nis === nis);
+            if (studentIndex !== -1) {
+                data.students[studentIndex] = { ...data.students[studentIndex], ...updatedStudent };
+            }
+            
+            // Update user account
+            const userIndex = data.users.findIndex(u => u.nis === nis);
+            if (userIndex !== -1) {
+                data.users[userIndex].name = updatedStudent.name;
+                data.users[userIndex].username = updatedStudent.username;
+                data.users[userIndex].password = updatedStudent.password;
+            }
+            
+            db.saveData(data);
+            
+            document.getElementById('editStudentModal').classList.add('hidden');
+            document.getElementById('editStudentForm').reset();
+            updateStudentsTable();
+            updateDashboardData();
+            showNotification('Data siswa berhasil diperbarui!', 'success');
+        });
+
+        // Edit teacher form handler
+        document.getElementById('editTeacherForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const oldUsername = document.getElementById('editTeacherUsername').value;
+            const updatedTeacher = {
+                name: document.getElementById('editTeacherName').value,
+                class: document.getElementById('editTeacherClass').value,
+                username: document.getElementById('editTeacherNewUsername').value,
+                password: document.getElementById('editTeacherPassword').value
+            };
+            
+            const data = db.getData();
+            
+            // Check if new class already has a teacher (excluding current teacher)
+            const existingTeacher = data.users.find(u => 
+                u.role === 'wali_kelas' && 
+                u.class === updatedTeacher.class && 
+                u.username !== oldUsername
+            );
+            
+            if (existingTeacher) {
+                showNotification(`Kelas ${updatedTeacher.class} sudah memiliki wali kelas lain!`, 'error');
+                return;
+            }
+            
+            // Update teacher data
+            const userIndex = data.users.findIndex(u => u.username === oldUsername);
+            if (userIndex !== -1) {
+                data.users[userIndex].name = updatedTeacher.name;
+                data.users[userIndex].class = updatedTeacher.class;
+                data.users[userIndex].username = updatedTeacher.username;
+                data.users[userIndex].password = updatedTeacher.password;
+            }
+            
+            db.saveData(data);
+            
+            document.getElementById('editTeacherModal').classList.add('hidden');
+            document.getElementById('editTeacherForm').reset();
+            updateTeachersTable();
+            showNotification('Data wali kelas berhasil diperbarui!', 'success');
+        });
+
+        // Helper functions
+        function getStatusColor(status) {
+            switch(status) {
+                case 'hadir': return 'bg-green-100 text-green-800';
+                case 'izin': return 'bg-blue-100 text-blue-800';
+                case 'sakit': return 'bg-yellow-100 text-yellow-800';
+                case 'alfa': return 'bg-red-100 text-red-800';
+                case 'tidak_hadir': return 'bg-red-100 text-red-800'; // fallback
+                default: return 'bg-gray-100 text-gray-800';
+            }
+        }
+
+        function getStatusText(status) {
+            switch(status) {
+                case 'hadir': return 'Hadir';
+                case 'izin': return 'Izin';
+                case 'sakit': return 'Sakit';
+                case 'alfa': return 'Alfa';
+                case 'tidak_hadir': return 'Tidak Hadir'; // fallback
+                default: return 'Belum Absen';
+            }
+        }
+
+        function editStudent(nis) {
+            const data = db.getData();
+            const student = data.students.find(s => s.nis === nis);
+            
+            if (!student) {
+                showNotification('Data siswa tidak ditemukan!', 'error');
+                return;
+            }
+            
+            // Fill form with current data
+            document.getElementById('editStudentNIS').value = student.nis;
+            document.getElementById('editStudentName').value = student.name;
+            document.getElementById('editStudentClass').value = student.class;
+            document.getElementById('editStudentUsername').value = student.username || '';
+            document.getElementById('editStudentPassword').value = student.password || '';
+            document.getElementById('editParentPhone').value = student.parentPhone || '';
+            
+            // Show modal
+            document.getElementById('editStudentModal').classList.remove('hidden');
+        }
+
+        function deleteStudent(nis) {
+            const confirmMessage = document.createElement('div');
+            confirmMessage.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50';
+            confirmMessage.innerHTML = `
+                <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+                    <div class="mt-3 text-center">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">Konfirmasi Hapus</h3>
+                        <p class="text-sm text-gray-500 mb-6">Apakah Anda yakin ingin menghapus siswa ini?</p>
+                        <div class="flex justify-center space-x-3">
+                            <button onclick="this.closest('.fixed').remove()" 
+                                    class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition duration-200">
+                                Batal
+                            </button>
+                            <button onclick="confirmDeleteStudent('${nis}'); this.closest('.fixed').remove()" 
+                                    class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition duration-200">
+                                Hapus
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(confirmMessage);
+        }
+
+        function confirmDeleteStudent(nis) {
+            const data = db.getData();
+            data.students = data.students.filter(s => s.nis !== nis);
+            db.saveData(data);
+            updateStudentsTable();
+            updateDashboardData();
+            showNotification('Siswa berhasil dihapus', 'success');
+        }
+
+        function viewStudentDetail(nis) {
+            const data = db.getData();
+            const student = data.students.find(s => s.nis === nis);
+            const studentAttendance = data.attendance.filter(a => a.nis === nis);
+            
+            if (!student) return;
+            
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50';
+            modal.innerHTML = `
+                <div class="relative top-10 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white">
+                    <div class="mt-3">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-medium text-gray-900">Detail Siswa</h3>
+                            <button onclick="this.closest('.fixed').remove()" 
+                                    class="text-gray-400 hover:text-gray-600">
+                                <span class="text-2xl">×</span>
+                            </button>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4 mb-6">
+                            <div>
+                                <p class="text-sm font-medium text-gray-500">NIS</p>
+                                <p class="text-lg text-gray-900">${student.nis}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-500">Nama</p>
+                                <p class="text-lg text-gray-900">${student.name}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-500">Kelas</p>
+                                <p class="text-lg text-gray-900">${student.class}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-500">Tingkat Kehadiran</p>
+                                <p class="text-lg text-gray-900">${student.attendance}%</p>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h4 class="text-md font-medium text-gray-900 mb-2">Riwayat Absensi (7 Hari Terakhir)</h4>
+                            <div class="space-y-2">
+                                ${generateRecentAttendance(studentAttendance)}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        function generateRecentAttendance(attendanceData) {
+            const recent = [];
+            const today = new Date();
+            
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date(today);
+                date.setDate(date.getDate() - i);
+                const dateStr = date.toISOString().split('T')[0];
+                const attendance = attendanceData.find(a => a.date === dateStr);
+                
+                recent.push(`
+                    <div class="flex justify-between items-center p-2 bg-gray-50 rounded">
+                        <span class="text-sm text-gray-600">${date.toLocaleDateString('id-ID')}</span>
+                        <span class="px-2 py-1 text-xs rounded-full ${
+                            attendance ? 
+                                (attendance.status === 'hadir' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800') :
+                                'bg-gray-100 text-gray-800'
+                        }">
+                            ${attendance ? (attendance.status === 'hadir' ? 'Hadir' : 'Tidak Hadir') : 'Belum Absen'}
+                        </span>
+                    </div>
+                `);
+            }
+            
+            return recent.join('');
+        }
+
+        function editTeacher(username) {
+            const data = db.getData();
+            const teacher = data.users.find(u => u.username === username && u.role === 'wali_kelas');
+            
+            if (!teacher) {
+                showNotification('Data wali kelas tidak ditemukan!', 'error');
+                return;
+            }
+            
+            // Fill form with current data
+            document.getElementById('editTeacherUsername').value = teacher.username;
+            document.getElementById('editTeacherName').value = teacher.name;
+            document.getElementById('editTeacherClass').value = teacher.class;
+            document.getElementById('editTeacherNewUsername').value = teacher.username;
+            document.getElementById('editTeacherPassword').value = teacher.password;
+            
+            // Show modal
+            document.getElementById('editTeacherModal').classList.remove('hidden');
+        }
+
+        function deleteTeacher(username) {
+            const confirmMessage = document.createElement('div');
+            confirmMessage.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50';
+            confirmMessage.innerHTML = `
+                <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+                    <div class="mt-3 text-center">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">Konfirmasi Hapus</h3>
+                        <p class="text-sm text-gray-500 mb-6">Apakah Anda yakin ingin menghapus wali kelas ini?</p>
+                        <div class="flex justify-center space-x-3">
+                            <button onclick="this.closest('.fixed').remove()" 
+                                    class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition duration-200">
+                                Batal
+                            </button>
+                            <button onclick="confirmDeleteTeacher('${username}'); this.closest('.fixed').remove()" 
+                                    class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition duration-200">
+                                Hapus
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(confirmMessage);
+        }
+
+        function confirmDeleteTeacher(username) {
+            const data = db.getData();
+            data.users = data.users.filter(u => u.username !== username);
+            db.saveData(data);
+            updateTeachersTable();
+            showNotification('Wali kelas berhasil dihapus', 'success');
+        }
+
+        // Class filter
+        document.getElementById('classFilter').addEventListener('change', function() {
+            const selectedClass = this.value;
+            const rows = document.querySelectorAll('#attendanceTableBody tr');
+            
+            rows.forEach(row => {
+                const classCell = row.cells[1].textContent;
+                if (!selectedClass || classCell.startsWith(selectedClass)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+
+        // Logo Settings Functions
+        function loadLogoSettings() {
+            // Load saved settings from localStorage
+            const savedSettings = localStorage.getItem('logoSettings');
+            if (savedSettings) {
+                currentLogoSettings = JSON.parse(savedSettings);
+            }
+            
+            // Set radio button
+            document.querySelector(`input[name="logoType"][value="${currentLogoSettings.type}"]`).checked = true;
+            
+            // Set custom URL if applicable
+            if (currentLogoSettings.type === 'custom') {
+                document.getElementById('customUrlSection').classList.remove('hidden');
+                document.getElementById('customLogoUrl').value = currentLogoSettings.customUrl;
+            }
+            
+            // Set color selection
+            document.querySelectorAll('.color-option').forEach(btn => {
+                btn.classList.remove('ring-4', 'ring-blue-500');
+                if (btn.dataset.color === currentLogoSettings.color) {
+                    btn.classList.add('ring-4', 'ring-blue-500');
+                }
+            });
+            
+            // Show current logo
+            updateCurrentLogoPreview();
+            updateLogoPreview();
+            
+            // Add event listeners for real-time preview
+            setupLogoEventListeners();
+        }
+
+        function setupLogoEventListeners() {
+            // Logo type change
+            document.querySelectorAll('input[name="logoType"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    const customSection = document.getElementById('customUrlSection');
+                    const colorSection = document.getElementById('colorSection');
+                    
+                    if (this.value === 'custom') {
+                        customSection.classList.remove('hidden');
+                        colorSection.classList.add('hidden');
+                    } else {
+                        customSection.classList.add('hidden');
+                        colorSection.classList.remove('hidden');
+                    }
+                    
+                    updateLogoPreview();
+                });
+            });
+            
+            // Custom URL change
+            document.getElementById('customLogoUrl').addEventListener('input', function() {
+                updateLogoPreview();
+            });
+            
+            // Color selection
+            document.querySelectorAll('.color-option').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.color-option').forEach(b => {
+                        b.classList.remove('ring-4', 'ring-blue-500');
+                    });
+                    this.classList.add('ring-4', 'ring-blue-500');
+                    updateLogoPreview();
+                });
+            });
+        }
+
+        function updateCurrentLogoPreview() {
+            const preview = document.getElementById('currentLogoPreview');
+            preview.innerHTML = generateLogoHTML(currentLogoSettings, 'w-16 h-16');
+        }
+
+        function updateLogoPreview() {
+            const selectedType = document.querySelector('input[name="logoType"]:checked').value;
+            const selectedColor = document.querySelector('.color-option.ring-4')?.dataset.color || 'indigo';
+            const customUrl = document.getElementById('customLogoUrl').value;
+            
+            const previewSettings = {
+                type: selectedType,
+                color: selectedColor,
+                customUrl: customUrl
+            };
+            
+            // Update preview logos
+            document.getElementById('loginLogoPreview').innerHTML = generateLogoHTML(previewSettings, 'w-16 h-16');
+            document.getElementById('headerLogoPreview').innerHTML = generateLogoHTML(previewSettings, 'w-8 h-8');
+        }
+
+        function generateLogoHTML(settings, sizeClass) {
+            if (settings.type === 'custom' && settings.customUrl) {
+                return `<img src="${settings.customUrl}" alt="Logo Sekolah" class="${sizeClass} rounded-full object-cover shadow-lg" 
+                            onerror="this.src=''; this.alt='Gambar gagal dimuat'; this.style.display='none';">`;
+            }
+            
+            const colors = {
+                indigo: { from: '#6366f1', to: '#3b82f6' },
+                green: { from: '#10b981', to: '#059669' },
+                red: { from: '#ef4444', to: '#dc2626' },
+                purple: { from: '#8b5cf6', to: '#7c3aed' },
+                orange: { from: '#f97316', to: '#ea580c' },
+                pink: { from: '#ec4899', to: '#db2777' },
+                teal: { from: '#14b8a6', to: '#0d9488' },
+                gray: { from: '#6b7280', to: '#4b5563' }
+            };
+            
+            const color = colors[settings.color] || colors.indigo;
+            
+            let svgContent = '';
+            
+            switch (settings.type) {
+                case 'school':
+                    svgContent = `
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M8 14l4-2 4 2v6l-4-2-4 2v-6z" fill="white" opacity="0.8"/>
+                    `;
+                    break;
+                case 'graduation':
+                    svgContent = `
+                        <path d="M12 2L2 7l10 5 10-5-10-5z" fill="white"/>
+                        <path d="M2 17l10 5 10-5" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M22 9v6c0 2-4 4-10 4S2 17 2 15V9" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="18" cy="6" r="2" fill="white"/>
+                    `;
+                    break;
+                default: // shield
+                    svgContent = `
+                        <path d="M12 2L2 7v10c0 5.55 3.84 9.74 9 11 5.16-1.26 9-5.45 9-11V7l-10-5z" fill="white"/>
+                        <path d="M9 12l2 2 4-4" stroke="${color.from}" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                    `;
+            }
+            
+            return `
+                <div class="${sizeClass} rounded-full flex items-center justify-center shadow-lg" 
+                     style="background: linear-gradient(135deg, ${color.from}, ${color.to});">
+                    <svg class="w-3/4 h-3/4 text-white" fill="currentColor" viewBox="0 0 24 24">
+                        ${svgContent}
+                    </svg>
+                </div>
+            `;
+        }
+
+        function saveLogoSettings() {
+            const selectedType = document.querySelector('input[name="logoType"]:checked').value;
+            const selectedColor = document.querySelector('.color-option.ring-4')?.dataset.color || 'indigo';
+            const customUrl = document.getElementById('customLogoUrl').value;
+            
+            // Validate custom URL if selected
+            if (selectedType === 'custom' && !customUrl) {
+                showNotification('Harap masukkan URL gambar untuk logo kustom!', 'error');
+                return;
+            }
+            
+            // Update current settings
+            currentLogoSettings = {
+                type: selectedType,
+                color: selectedColor,
+                customUrl: customUrl
+            };
+            
+            // Save to localStorage
+            localStorage.setItem('logoSettings', JSON.stringify(currentLogoSettings));
+            
+            // Update all logos in the interface
+            updateAllLogos();
+            
+            // Close modal
+            document.getElementById('logoSettingsModal').classList.add('hidden');
+            
+            showNotification('Logo berhasil diperbarui!', 'success');
+        }
+
+        function updateAllLogos() {
+            // Update login page logo
+            const loginLogo = document.querySelector('#loginPage .w-20.h-20');
+            if (loginLogo) {
+                loginLogo.outerHTML = generateLogoHTML(currentLogoSettings, 'w-20 h-20');
+            }
+            
+            // Update header logo
+            const headerLogo = document.querySelector('header .w-10.h-10');
+            if (headerLogo) {
+                headerLogo.outerHTML = generateLogoHTML(currentLogoSettings, 'w-10 h-10');
+            }
+        }
+
+        // Initialize logo settings on page load
+        function initializeLogoSettings() {
+            const savedSettings = localStorage.getItem('logoSettings');
+            if (savedSettings) {
+                currentLogoSettings = JSON.parse(savedSettings);
+                updateAllLogos();
+            }
+        }
+
+        // Profile Photo Functions
+        function initializeProfilePhoto() {
+            const profileData = getProfileData();
+            updateProfilePhotoDisplay(profileData);
+        }
+
+        function getProfileData() {
+            const savedProfile = localStorage.getItem(`profile_${currentUser.username}`);
+            if (savedProfile) {
+                return JSON.parse(savedProfile);
+            }
+            
+            // Default profile data
+            return {
+                photo: null,
+                photoType: 'initials',
+                avatar: null,
+                name: currentUser.name
+            };
+        }
+
+        function saveProfileData(profileData) {
+            localStorage.setItem(`profile_${currentUser.username}`, JSON.stringify(profileData));
+        }
+
+        function updateProfilePhotoDisplay(profileData) {
+            const profilePhotoImg = document.getElementById('profilePhotoImg');
+            const profileInitials = document.getElementById('profileInitials');
+            
+            if (profileData.photoType === 'url' && profileData.photo) {
+                profilePhotoImg.src = profileData.photo;
+                profilePhotoImg.style.display = 'block';
+                profilePhotoImg.nextElementSibling.style.display = 'none';
+            } else if (profileData.photoType === 'avatar' && profileData.avatar) {
+                profilePhotoImg.style.display = 'none';
+                profilePhotoImg.nextElementSibling.style.display = 'flex';
+                profilePhotoImg.nextElementSibling.innerHTML = getAvatarHTML(profileData.avatar);
+            } else {
+                // Show initials
+                profilePhotoImg.style.display = 'none';
+                profilePhotoImg.nextElementSibling.style.display = 'flex';
+                const initials = getInitials(profileData.name || currentUser.name);
+                profileInitials.textContent = initials;
+            }
+        }
+
+        function getInitials(name) {
+            return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+        }
+
+        function getAvatarHTML(avatarId) {
+            const avatars = {
+                '1': '<div class="w-full h-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold text-lg">👨</div>',
+                '2': '<div class="w-full h-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-white font-bold text-lg">👩</div>',
+                '3': '<div class="w-full h-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-white font-bold text-lg">🧑</div>',
+                '4': '<div class="w-full h-full bg-gradient-to-br from-pink-400 to-pink-600 flex items-center justify-center text-white font-bold text-lg">👤</div>',
+                '5': '<div class="w-full h-full bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center text-white font-bold text-lg">😊</div>',
+                '6': '<div class="w-full h-full bg-gradient-to-br from-red-400 to-red-600 flex items-center justify-center text-white font-bold text-lg">🎓</div>',
+                '7': '<div class="w-full h-full bg-gradient-to-br from-indigo-400 to-indigo-600 flex items-center justify-center text-white font-bold text-lg">📚</div>',
+                '8': '<div class="w-full h-full bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center text-white font-bold text-lg">✨</div>'
+            };
+            return avatars[avatarId] || avatars['1'];
+        }
+
+        function openProfileModal() {
+            const profileData = getProfileData();
+            
+            // Fill form with current data
+            document.getElementById('profileName').value = currentUser.name;
+            document.getElementById('profileUsername').value = currentUser.username;
+            document.getElementById('profileRole').value = currentUser.role.replace('_', ' ').toUpperCase();
+            
+            // Show/hide role-specific fields
+            if (currentUser.role === 'siswa') {
+                document.getElementById('profileNISSection').classList.remove('hidden');
+                document.getElementById('profileNIS').value = currentUser.nis || '';
+                
+                const data = db.getData();
+                const student = data.students.find(s => s.nis === currentUser.nis);
+                if (student) {
+                    document.getElementById('profileClassSection').classList.remove('hidden');
+                    document.getElementById('profileClass').value = student.class;
+                }
+            } else if (currentUser.role === 'wali_kelas') {
+                document.getElementById('profileClassSection').classList.remove('hidden');
+                document.getElementById('profileClass').value = currentUser.class || '';
+            }
+            
+            // Update modal photo display
+            updateModalPhotoDisplay(profileData);
+            
+            // Show modal
+            document.getElementById('profileModal').classList.remove('hidden');
+        }
+
+        function closeProfileModal() {
+            document.getElementById('profileModal').classList.add('hidden');
+            document.getElementById('profileNewPassword').value = '';
+        }
+
+        function updateModalPhotoDisplay(profileData) {
+            const modalPhotoImg = document.getElementById('profileModalPhotoImg');
+            const modalInitials = document.getElementById('profileModalInitials');
+            
+            if (profileData.photoType === 'url' && profileData.photo) {
+                modalPhotoImg.src = profileData.photo;
+                modalPhotoImg.style.display = 'block';
+                modalPhotoImg.nextElementSibling.style.display = 'none';
+            } else if (profileData.photoType === 'avatar' && profileData.avatar) {
+                modalPhotoImg.style.display = 'none';
+                modalPhotoImg.nextElementSibling.style.display = 'flex';
+                modalPhotoImg.nextElementSibling.innerHTML = getAvatarHTML(profileData.avatar);
+            } else {
+                modalPhotoImg.style.display = 'none';
+                modalPhotoImg.nextElementSibling.style.display = 'flex';
+                const initials = getInitials(profileData.name || currentUser.name);
+                modalInitials.textContent = initials;
+            }
+        }
+
+        function changeProfilePhoto() {
+            document.getElementById('photoUploadModal').classList.remove('hidden');
+            setupPhotoUploadListeners();
+        }
+
+        function closePhotoUploadModal() {
+            document.getElementById('photoUploadModal').classList.add('hidden');
+            document.getElementById('photoUrl').value = '';
+            document.querySelectorAll('.avatar-option').forEach(btn => {
+                btn.classList.remove('ring-4', 'ring-indigo-500');
+            });
+        }
+
+        function setupPhotoUploadListeners() {
+            // Method selection
+            document.querySelectorAll('input[name="photoMethod"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    const urlSection = document.getElementById('urlPhotoSection');
+                    const avatarSection = document.getElementById('avatarPhotoSection');
+                    
+                    if (this.value === 'url') {
+                        urlSection.classList.remove('hidden');
+                        avatarSection.classList.add('hidden');
+                    } else {
+                        urlSection.classList.add('hidden');
+                        avatarSection.classList.remove('hidden');
+                    }
+                    updatePhotoPreview();
+                });
+            });
+            
+            // URL input
+            document.getElementById('photoUrl').addEventListener('input', updatePhotoPreview);
+            
+            // Avatar selection
+            document.querySelectorAll('.avatar-option').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.avatar-option').forEach(b => {
+                        b.classList.remove('ring-4', 'ring-indigo-500');
+                    });
+                    this.classList.add('ring-4', 'ring-indigo-500');
+                    updatePhotoPreview();
+                });
+            });
+        }
+
+        function updatePhotoPreview() {
+            const method = document.querySelector('input[name="photoMethod"]:checked').value;
+            const preview = document.getElementById('photoPreview');
+            
+            if (method === 'url') {
+                const url = document.getElementById('photoUrl').value;
+                if (url) {
+                    preview.innerHTML = `<img src="${url}" alt="Preview" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<div class=\\'w-full h-full bg-red-100 flex items-center justify-center text-red-500 text-xs\\'>Error</div>';">`;
+                } else {
+                    preview.innerHTML = '<div class="w-full h-full bg-gray-200 flex items-center justify-center text-gray-500 text-sm">Preview</div>';
+                }
+            } else {
+                const selectedAvatar = document.querySelector('.avatar-option.ring-4');
+                if (selectedAvatar) {
+                    const avatarId = selectedAvatar.dataset.avatar;
+                    preview.innerHTML = getAvatarHTML(avatarId);
+                } else {
+                    preview.innerHTML = '<div class="w-full h-full bg-gray-200 flex items-center justify-center text-gray-500 text-sm">Pilih Avatar</div>';
+                }
+            }
+        }
+
+        function saveProfilePhoto() {
+            const method = document.querySelector('input[name="photoMethod"]:checked').value;
+            let profileData = getProfileData();
+            
+            if (method === 'url') {
+                const url = document.getElementById('photoUrl').value;
+                if (!url) {
+                    showNotification('Harap masukkan URL foto!', 'error');
+                    return;
+                }
+                profileData.photoType = 'url';
+                profileData.photo = url;
+                profileData.avatar = null;
+            } else {
+                const selectedAvatar = document.querySelector('.avatar-option.ring-4');
+                if (!selectedAvatar) {
+                    showNotification('Harap pilih avatar!', 'error');
+                    return;
+                }
+                profileData.photoType = 'avatar';
+                profileData.avatar = selectedAvatar.dataset.avatar;
+                profileData.photo = null;
+            }
+            
+            saveProfileData(profileData);
+            updateProfilePhotoDisplay(profileData);
+            updateModalPhotoDisplay(profileData);
+            closePhotoUploadModal();
+            showNotification('Foto profil berhasil diperbarui!', 'success');
+        }
+
+        function saveProfile() {
+            const newName = document.getElementById('profileName').value;
+            const newPassword = document.getElementById('profileNewPassword').value;
+            
+            if (!newName.trim()) {
+                showNotification('Nama tidak boleh kosong!', 'error');
+                return;
+            }
+            
+            const data = db.getData();
+            
+            // Update user data
+            const userIndex = data.users.findIndex(u => u.username === currentUser.username);
+            if (userIndex !== -1) {
+                data.users[userIndex].name = newName;
+                if (newPassword.trim()) {
+                    data.users[userIndex].password = newPassword;
+                }
+            }
+            
+            // Update student data if applicable
+            if (currentUser.role === 'siswa') {
+                const studentIndex = data.students.findIndex(s => s.nis === currentUser.nis);
+                if (studentIndex !== -1) {
+                    data.students[studentIndex].name = newName;
+                    if (newPassword.trim()) {
+                        data.students[studentIndex].password = newPassword;
+                    }
+                }
+            }
+            
+            db.saveData(data);
+            
+            // Update current user object
+            currentUser.name = newName;
+            if (newPassword.trim()) {
+                currentUser.password = newPassword;
+            }
+            
+            // Update profile data
+            let profileData = getProfileData();
+            profileData.name = newName;
+            saveProfileData(profileData);
+            
+            // Update display
+            document.getElementById('currentUser').textContent = newName;
+            updateProfilePhotoDisplay(profileData);
+            
+            closeProfileModal();
+            showNotification('Profil berhasil diperbarui!', 'success');
+        }
+
+        // Download Report Functions
+        function downloadMonthlyReport() {
+            const selectedClass = document.getElementById('monthlyClass').value;
+            const selectedMonth = document.getElementById('monthlyPeriod').value;
+            
+            const data = db.getData();
+            let studentsToInclude = data.students;
+            
+            // Filter by class if selected
+            if (selectedClass) {
+                studentsToInclude = data.students.filter(s => s.class === selectedClass);
+            }
+            
+            // Filter by user role
+            if (currentUser.role === 'wali_kelas') {
+                studentsToInclude = studentsToInclude.filter(s => s.class === currentUser.class);
+            }
+            
+            // Generate report data
+            const reportData = generateMonthlyReportData(studentsToInclude, selectedMonth);
+            
+            // Create and download Excel file
+            downloadExcelReport(reportData, `Laporan_Bulanan_${selectedMonth}_${selectedClass || 'Semua_Kelas'}.xlsx`);
+            
+            showNotification('Laporan bulanan berhasil diunduh!', 'success');
+        }
+
+        function downloadSemesterReport() {
+            const selectedClass = document.getElementById('semesterClass').value;
+            const selectedSemester = document.getElementById('semesterPeriod').value;
+            
+            const data = db.getData();
+            let studentsToInclude = data.students;
+            
+            // Filter by class if selected
+            if (selectedClass) {
+                studentsToInclude = data.students.filter(s => s.class === selectedClass);
+            }
+            
+            // Filter by user role
+            if (currentUser.role === 'wali_kelas') {
+                studentsToInclude = studentsToInclude.filter(s => s.class === currentUser.class);
+            }
+            
+            // Generate report data
+            const reportData = generateSemesterReportData(studentsToInclude, selectedSemester);
+            
+            // Create and download Excel file
+            downloadExcelReport(reportData, `Laporan_Semester_${selectedSemester}_${selectedClass || 'Semua_Kelas'}.xlsx`);
+            
+            showNotification('Laporan semester berhasil diunduh!', 'success');
+        }
+
+        function generateMonthlyReportData(students, month) {
+            const [year, monthNum] = month.split('-');
+            const monthName = new Date(year, monthNum - 1).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+            
+            const reportData = [
+                ['LAPORAN ABSENSI BULANAN'],
+                [`Periode: ${monthName}`],
+                [`Tanggal Cetak: ${new Date().toLocaleDateString('id-ID')}`],
+                [''],
+                ['No', 'NIS', 'Nama Siswa', 'Kelas', 'Hadir', 'Izin', 'Sakit', 'Alfa', 'Total Hari', 'Persentase Kehadiran']
+            ];
+            
+            students.forEach((student, index) => {
+                // Simulate attendance data for the month
+                const totalDays = 22; // Average school days per month
+                const hadir = Math.floor(Math.random() * 5) + 18; // 18-22 days
+                const izin = Math.floor(Math.random() * 2); // 0-1 days
+                const sakit = Math.floor(Math.random() * 2); // 0-1 days
+                const alfa = totalDays - hadir - izin - sakit;
+                const percentage = ((hadir / totalDays) * 100).toFixed(1);
+                
+                reportData.push([
+                    index + 1,
+                    student.nis,
+                    student.name,
+                    student.class,
+                    hadir,
+                    izin,
+                    sakit,
+                    alfa,
+                    totalDays,
+                    `${percentage}%`
+                ]);
+            });
+            
+            return reportData;
+        }
+
+        function generateSemesterReportData(students, semester) {
+            const [year, semesterNum] = semester.split('-');
+            const semesterName = `Semester ${semesterNum} Tahun ${year}`;
+            
+            const reportData = [
+                ['LAPORAN ABSENSI SEMESTER'],
+                [`Periode: ${semesterName}`],
+                [`Tanggal Cetak: ${new Date().toLocaleDateString('id-ID')}`],
+                [''],
+                ['No', 'NIS', 'Nama Siswa', 'Kelas', 'Hadir', 'Izin', 'Sakit', 'Alfa', 'Total Hari', 'Persentase Kehadiran', 'Keterangan']
+            ];
+            
+            students.forEach((student, index) => {
+                // Simulate attendance data for the semester
+                const totalDays = 110; // Average school days per semester
+                const hadir = Math.floor(Math.random() * 20) + 90; // 90-110 days
+                const izin = Math.floor(Math.random() * 5); // 0-4 days
+                const sakit = Math.floor(Math.random() * 5); // 0-4 days
+                const alfa = totalDays - hadir - izin - sakit;
+                const percentage = ((hadir / totalDays) * 100).toFixed(1);
+                
+                let keterangan = 'Baik';
+                if (percentage < 75) keterangan = 'Kurang';
+                else if (percentage < 85) keterangan = 'Cukup';
+                else if (percentage >= 95) keterangan = 'Sangat Baik';
+                
+                reportData.push([
+                    index + 1,
+                    student.nis,
+                    student.name,
+                    student.class,
+                    hadir,
+                    izin,
+                    sakit,
+                    alfa,
+                    totalDays,
+                    `${percentage}%`,
+                    keterangan
+                ]);
+            });
+            
+            return reportData;
+        }
+
+        function downloadExcelReport(data, filename) {
+            // Create CSV content (Excel-compatible)
+            let csvContent = '';
+            
+            data.forEach(row => {
+                const csvRow = row.map(cell => {
+                    // Handle cells that might contain commas or quotes
+                    if (typeof cell === 'string' && (cell.includes(',') || cell.includes('"') || cell.includes('\n'))) {
+                        return `"${cell.replace(/"/g, '""')}"`;
+                    }
+                    return cell;
+                }).join(',');
+                csvContent += csvRow + '\n';
+            });
+            
+            // Add BOM for proper UTF-8 encoding in Excel
+            const BOM = '\uFEFF';
+            const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+            
+            // Create download link
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', filename.replace('.xlsx', '.csv'));
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Absent Reason Modal Functions
+        let currentAbsentStudentNIS = null;
+
+        function showAbsentReasonModal(nis) {
+            currentAbsentStudentNIS = nis;
+            document.getElementById('absentReasonModal').classList.remove('hidden');
+        }
+
+        function closeAbsentReasonModal() {
+            document.getElementById('absentReasonModal').classList.add('hidden');
+            currentAbsentStudentNIS = null;
+        }
+
+        function markAttendanceWithReason(reason) {
+            if (currentAbsentStudentNIS) {
+                db.updateAttendance(currentAbsentStudentNIS, reason);
+                updateAttendanceTable();
+                updateDashboardData();
+                closeAbsentReasonModal();
+                
+                // Send WhatsApp notification for absent students
+                const data = db.getData();
+                const student = data.students.find(s => s.nis === currentAbsentStudentNIS);
+                if (student) {
+                    sendAbsentWhatsAppNotification(student, reason);
+                }
+                
+                showNotification(`Absensi berhasil dicatat: ${getStatusText(reason)}`, 'success');
+            }
+        }
+
+        // Student Self Absent Functions
+        let currentStudentNIS = null;
+
+        function showStudentAbsentModal(nis) {
+            currentStudentNIS = nis;
+            document.getElementById('studentAbsentModal').classList.remove('hidden');
+        }
+
+        function closeStudentAbsentModal() {
+            document.getElementById('studentAbsentModal').classList.add('hidden');
+            currentStudentNIS = null;
+        }
+
+        function studentSelfAbsent(reason) {
+            if (currentStudentNIS) {
+                const data = db.getData();
+                const student = data.students.find(s => s.nis === currentStudentNIS);
+                
+                if (!student) return;
+                
+                // Mark attendance
+                db.updateAttendance(currentStudentNIS, reason);
+                
+                // Send WhatsApp notification to parent
+                sendAbsentWhatsAppNotification(student, reason);
+                
+                // Show success message
+                showNotification(`Laporan ketidakhadiran berhasil dikirim. Notifikasi telah dikirim ke orang tua.`, 'success');
+                
+                // Update displays
+                updateAttendanceTable();
+                updateDashboardData();
+                closeStudentAbsentModal();
+            }
+        }
+
+        // Send WhatsApp notification for absent students
+        function sendAbsentWhatsAppNotification(student, reason) {
+            const now = new Date();
+            const time = now.toLocaleTimeString('id-ID');
+            const date = now.toLocaleDateString('id-ID');
+            
+            const reasonText = {
+                'izin': 'IZIN',
+                'sakit': 'SAKIT', 
+                'alfa': 'ALFA (Tanpa Keterangan)'
+            };
+            
+            const message = `Assalamualaikum,
+            
+Kami informasikan bahwa ${student.name} (${student.class}) TIDAK HADIR di sekolah pada:
+
+📅 Tanggal: ${date}
+🕐 Waktu Lapor: ${time}
+📝 Alasan: ${reasonText[reason]}
+
+${reason === 'alfa' ? 
+    'Mohon segera menghubungi sekolah untuk konfirmasi.' : 
+    'Terima kasih atas laporannya.'
+}
+
+SMA Negeri 1 Jakarta`;
+            
+            // Simulate WhatsApp API call
+            console.log(`Sending WhatsApp to ${student.parentPhone}:`, message);
+        }
+
+        function updateBarcodeTab() {
+            generateQRCodes();
+        }
+
+        // QR Code Generation Functions
+        function generateQRCodes() {
+            const data = db.getData();
+            let studentsToShow = [];
+            
+            if (currentUser.role === 'siswa') {
+                // Siswa hanya lihat QR code sendiri
+                studentsToShow = data.students.filter(s => s.nis === currentUser.nis);
+            } else {
+                // Admin lihat semua siswa
+                studentsToShow = data.students;
+            }
+            
+            const grid = document.getElementById('qrCodeGrid');
+            grid.innerHTML = '';
+            
+            studentsToShow.forEach(student => {
+                const qrCard = createQRCard(student);
+                grid.appendChild(qrCard);
+            });
+            
+            // Setup search and filter
+            setupQRSearch();
+        }
+
+        function createQRCard(student) {
+            const card = document.createElement('div');
+            card.className = 'bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition duration-200';
+            card.dataset.studentName = student.name.toLowerCase();
+            card.dataset.studentNis = student.nis;
+            card.dataset.studentClass = student.class;
+            
+            const qrData = JSON.stringify({
+                type: 'student_attendance',
+                nis: student.nis,
+                name: student.name,
+                class: student.class,
+                timestamp: Date.now()
+            });
+            
+            // Create unique canvas ID
+            const canvasId = `qr-${student.nis}-${Date.now()}`;
+            
+            card.innerHTML = `
+                <div class="text-center">
+                    <div class="mb-4 flex justify-center">
+                        <div id="qr-container-${student.nis}" class="border border-gray-300 rounded p-2 bg-white">
+                            <canvas id="${canvasId}" width="150" height="150"></canvas>
+                        </div>
+                    </div>
+                    <div class="space-y-1">
+                        <h4 class="font-medium text-gray-900">${student.name}</h4>
+                        <p class="text-sm text-gray-600">NIS: ${student.nis}</p>
+                        <p class="text-sm text-gray-600">Kelas: ${student.class}</p>
+                    </div>
+                    <div class="mt-4 flex space-x-2">
+                        <button onclick="downloadQRCode('${canvasId}', '${student.name}', '${student.nis}')" 
+                                class="flex-1 bg-blue-500 text-white px-3 py-2 rounded text-sm hover:bg-blue-600 transition duration-200">
+                            📥 Download
+                        </button>
+                        <button onclick="printQRCode('${canvasId}', '${student.nis}')" 
+                                class="flex-1 bg-green-500 text-white px-3 py-2 rounded text-sm hover:bg-green-600 transition duration-200">
+                            🖨️ Print
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // Generate QR code immediately after adding to DOM
+            setTimeout(() => {
+                const canvas = document.getElementById(canvasId);
+                if (canvas && window.QRCode) {
+                    try {
+                        QRCode.toCanvas(canvas, qrData, {
+                            width: 150,
+                            height: 150,
+                            margin: 2,
+                            color: {
+                                dark: '#000000',
+                                light: '#FFFFFF'
+                            },
+                            errorCorrectionLevel: 'M'
+                        }, function (error) {
+                            if (error) {
+                                console.error('QR Code generation error:', error);
+                                // Fallback: show error message
+                                const container = document.getElementById(`qr-container-${student.nis}`);
+                                if (container) {
+                                    container.innerHTML = `
+                                        <div class="w-[150px] h-[150px] flex items-center justify-center bg-gray-100 text-gray-500 text-sm">
+                                            QR Code Error
+                                        </div>
+                                    `;
+                                }
+                            } else {
+                                console.log('QR Code generated successfully for:', student.name);
+                            }
+                        });
+                    } catch (error) {
+                        console.error('QR Code generation failed:', error);
+                        // Fallback: show placeholder
+                        const container = document.getElementById(`qr-container-${student.nis}`);
+                        if (container) {
+                            container.innerHTML = `
+                                <div class="w-[150px] h-[150px] flex items-center justify-center bg-gray-100 text-gray-500 text-sm">
+                                    <div class="text-center">
+                                        <div class="text-2xl mb-2">📱</div>
+                                        <div>QR Code</div>
+                                        <div class="text-xs">${student.nis}</div>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    }
+                } else {
+                    console.error('Canvas not found or QRCode library not loaded');
+                    // Fallback: show placeholder
+                    const container = document.getElementById(`qr-container-${student.nis}`);
+                    if (container) {
+                        container.innerHTML = `
+                            <div class="w-[150px] h-[150px] flex items-center justify-center bg-gray-100 text-gray-500 text-sm">
+                                <div class="text-center">
+                                    <div class="text-2xl mb-2">📱</div>
+                                    <div>QR Code</div>
+                                    <div class="text-xs">${student.nis}</div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                }
+            }, 200);
+            
+            return card;
+        }
+
+        function setupQRSearch() {
+            const searchInput = document.getElementById('qrSearchInput');
+            const classFilter = document.getElementById('qrClassFilter');
+            
+            function filterQRCodes() {
+                const searchTerm = searchInput.value.toLowerCase();
+                const selectedClass = classFilter.value;
+                const cards = document.querySelectorAll('#qrCodeGrid > div');
+                
+                cards.forEach(card => {
+                    const name = card.dataset.studentName;
+                    const nis = card.dataset.studentNis;
+                    const studentClass = card.dataset.studentClass;
+                    
+                    const matchesSearch = name.includes(searchTerm) || nis.includes(searchTerm);
+                    const matchesClass = !selectedClass || studentClass === selectedClass;
+                    
+                    if (matchesSearch && matchesClass) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            }
+            
+            searchInput.addEventListener('input', filterQRCodes);
+            classFilter.addEventListener('change', filterQRCodes);
+        }
+
+        function downloadQRCode(canvasId, name, nis) {
+            const canvas = document.getElementById(canvasId);
+            if (canvas) {
+                try {
+                    const link = document.createElement('a');
+                    link.download = `QR_${name.replace(/\s+/g, '_')}_${nis}.png`;
+                    link.href = canvas.toDataURL('image/png');
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    
+                    showNotification(`QR Code ${name} berhasil diunduh!`, 'success');
+                } catch (error) {
+                    console.error('Download error:', error);
+                    showNotification('Gagal mengunduh QR Code!', 'error');
+                }
+            } else {
+                showNotification('QR Code tidak ditemukan!', 'error');
+            }
+        }
+
+        function printQRCode(canvasId, nis) {
+            const canvas = document.getElementById(canvasId);
+            const data = db.getData();
+            const student = data.students.find(s => s.nis === nis);
+            
+            if (canvas && student) {
+                try {
+                    const printWindow = window.open('', '_blank');
+                    printWindow.document.write(`
+                        <html>
+                            <head>
+                                <title>QR Code - ${student.name}</title>
+                                <style>
+                                    body { 
+                                        font-family: Arial, sans-serif; 
+                                        text-align: center; 
+                                        padding: 20px;
+                                        margin: 0;
+                                    }
+                                    .qr-container {
+                                        border: 2px solid #000;
+                                        padding: 20px;
+                                        display: inline-block;
+                                        margin: 20px;
+                                    }
+                                    .student-info {
+                                        margin-top: 15px;
+                                        font-size: 14px;
+                                    }
+                                    .school-name {
+                                        font-size: 18px;
+                                        font-weight: bold;
+                                        margin-bottom: 10px;
+                                    }
+                                    @media print {
+                                        body { margin: 0; }
+                                    }
+                                </style>
+                            </head>
+                            <body>
+                                <div class="qr-container">
+                                    <div class="school-name">SMA Negeri 1 Jakarta</div>
+                                    <div class="school-name">QR Code Absensi</div>
+                                    <img src="${canvas.toDataURL('image/png')}" alt="QR Code" style="width: 150px; height: 150px;">
+                                    <div class="student-info">
+                                        <div><strong>${student.name}</strong></div>
+                                        <div>NIS: ${student.nis}</div>
+                                        <div>Kelas: ${student.class}</div>
+                                    </div>
+                                </div>
+                            </body>
+                        </html>
+                    `);
+                    printWindow.document.close();
+                    
+                    // Wait for content to load before printing
+                    setTimeout(() => {
+                        printWindow.print();
+                    }, 500);
+                    
+                    showNotification(`QR Code ${student.name} siap dicetak!`, 'success');
+                } catch (error) {
+                    console.error('Print error:', error);
+                    showNotification('Gagal mencetak QR Code!', 'error');
+                }
+            } else {
+                showNotification('QR Code atau data siswa tidak ditemukan!', 'error');
+            }
+        }
+
+        // Print All QR Codes
+        document.getElementById('printAllQRBtn').addEventListener('click', function() {
+            const data = db.getData();
+            let studentsToShow = [];
+            
+            if (currentUser.role === 'siswa') {
+                studentsToShow = data.students.filter(s => s.nis === currentUser.nis);
+            } else {
+                studentsToShow = data.students;
+            }
+            
+            try {
+                const printWindow = window.open('', '_blank');
+                let htmlContent = `
+                    <html>
+                        <head>
+                            <title>QR Codes - Semua Siswa</title>
+                            <style>
+                                body { 
+                                    font-family: Arial, sans-serif; 
+                                    padding: 20px;
+                                    margin: 0;
+                                }
+                                .qr-grid {
+                                    display: grid;
+                                    grid-template-columns: repeat(2, 1fr);
+                                    gap: 20px;
+                                    page-break-inside: avoid;
+                                }
+                                .qr-container {
+                                    border: 2px solid #000;
+                                    padding: 15px;
+                                    text-align: center;
+                                    page-break-inside: avoid;
+                                }
+                                .student-info {
+                                    margin-top: 10px;
+                                    font-size: 12px;
+                                }
+                                .school-name {
+                                    font-size: 14px;
+                                    font-weight: bold;
+                                    margin-bottom: 8px;
+                                }
+                                @media print {
+                                    body { margin: 0; }
+                                    .qr-container { break-inside: avoid; }
+                                }
+                            </style>
+                        </head>
+                        <body>
+                            <h1 style="text-align: center; margin-bottom: 30px;">QR Code Absensi - SMA Negeri 1 Jakarta</h1>
+                            <div class="qr-grid">
+                `;
+                
+                studentsToShow.forEach(student => {
+                    // Find canvas with current naming convention
+                    const canvases = document.querySelectorAll(`canvas[id^="qr-${student.nis}-"]`);
+                    const canvas = canvases.length > 0 ? canvases[0] : null;
+                    
+                    if (canvas) {
+                        try {
+                            htmlContent += `
+                                <div class="qr-container">
+                                    <div class="school-name">QR Code Absensi</div>
+                                    <img src="${canvas.toDataURL('image/png')}" alt="QR Code" style="width: 120px; height: 120px;">
+                                    <div class="student-info">
+                                        <div><strong>${student.name}</strong></div>
+                                        <div>NIS: ${student.nis}</div>
+                                        <div>Kelas: ${student.class}</div>
+                                    </div>
+                                </div>
+                            `;
+                        } catch (error) {
+                            console.error(`Error getting canvas data for ${student.name}:`, error);
+                            // Add placeholder if canvas fails
+                            htmlContent += `
+                                <div class="qr-container">
+                                    <div class="school-name">QR Code Absensi</div>
+                                    <div style="width: 120px; height: 120px; border: 1px solid #ccc; display: flex; align-items: center; justify-content: center; margin: 0 auto; background: #f5f5f5;">
+                                        QR Code Error
+                                    </div>
+                                    <div class="student-info">
+                                        <div><strong>${student.name}</strong></div>
+                                        <div>NIS: ${student.nis}</div>
+                                        <div>Kelas: ${student.class}</div>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    }
+                });
+                
+                htmlContent += `
+                            </div>
+                        </body>
+                    </html>
+                `;
+                
+                printWindow.document.write(htmlContent);
+                printWindow.document.close();
+                
+                // Wait for images to load before printing
+                setTimeout(() => {
+                    printWindow.print();
+                }, 1000);
+                
+                showNotification('Semua QR Code siap dicetak!', 'success');
+            } catch (error) {
+                console.error('Print all error:', error);
+                showNotification('Gagal mencetak semua QR Code!', 'error');
+            }
+        });
+
+        // Download QR ZIP (simplified - creates individual downloads)
+        document.getElementById('downloadQRZipBtn').addEventListener('click', function() {
+            const data = db.getData();
+            let studentsToShow = [];
+            
+            if (currentUser.role === 'siswa') {
+                studentsToShow = data.students.filter(s => s.nis === currentUser.nis);
+            } else {
+                studentsToShow = data.students;
+            }
+            
+            let downloadCount = 0;
+            let successCount = 0;
+            
+            showNotification('Memulai download QR Code...', 'info');
+            
+            studentsToShow.forEach((student, index) => {
+                setTimeout(() => {
+                    // Find canvas with current naming convention
+                    const canvases = document.querySelectorAll(`canvas[id^="qr-${student.nis}-"]`);
+                    const canvas = canvases.length > 0 ? canvases[0] : null;
+                    
+                    if (canvas) {
+                        const canvasId = canvas.id;
+                        try {
+                            downloadQRCode(canvasId, student.name, student.nis);
+                            successCount++;
+                        } catch (error) {
+                            console.error(`Download failed for ${student.name}:`, error);
+                        }
+                    } else {
+                        console.error(`Canvas not found for ${student.name}`);
+                    }
+                    
+                    downloadCount++;
+                    
+                    if (downloadCount === studentsToShow.length) {
+                        showNotification(`${successCount} dari ${studentsToShow.length} QR Code berhasil diunduh!`, 'success');
+                    }
+                }, index * 800); // Increased delay to prevent browser blocking
+            });
+        });
+
+        // Call initialize function when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeLogoSettings();
+        });
+    </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9af3926da7b4f8d3',t:'MTc2NTk0NDYzOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+
+</html>
